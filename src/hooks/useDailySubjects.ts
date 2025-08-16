@@ -50,10 +50,10 @@ export const useDailySubjects = () => {
     const { data: timetableEntries, error: timetableError } = await supabase
       .from('timetables')
       .select(`
-        subject_id,
+        class_id,
         start_time,
         end_time,
-        subjects (id, name, period)
+        subjects:class_id (id, name, period)
       `)
       .eq('day_of_week', supabaseDayOfWeek)
       .eq('batch_id', studentBatchId)
@@ -80,7 +80,7 @@ export const useDailySubjects = () => {
 
     const { data: feedbackData, error: feedbackError } = await supabase
       .from('feedback')
-      .select('subject_id')
+      .select('class_id')
       .eq('student_id', userId)
       .eq('batch_id', studentBatchId)
       .eq('semester_number', studentSemesterNumber);
@@ -90,7 +90,7 @@ export const useDailySubjects = () => {
       showError("Failed to load feedback status.");
     }
 
-    const submittedSubjectIds = new Set(feedbackData?.map(f => f.subject_id));
+    const submittedSubjectIds = new Set(feedbackData?.map(f => f.class_id));
 
     const subjectsWithFeedbackStatus = dailyScheduledSubjects.map(sub => ({
       ...sub,

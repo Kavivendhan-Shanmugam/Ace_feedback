@@ -22,9 +22,9 @@ export const useFeedbackManager = () => {
         created_at,
         is_response_seen_by_student,
         class_id,
-        subjects:class_id (name, period),
-        profiles:student_id (first_name, last_name),
-        batches (name)
+        subjects!class_id (name, period),
+        profiles!student_id (first_name, last_name),
+        batches!batch_id (name)
       `)
       .order('created_at', { ascending: false });
 

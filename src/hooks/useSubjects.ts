@@ -14,7 +14,7 @@ export const useSubjects = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('subjects')
-      .select(`*, batches (name)`) // Join with batches to get batch name
+      .select(`*, batches!batch_id (name)`) // Join with batches to get batch name
       .order('name', { ascending: true });
 
     if (error) {
@@ -35,7 +35,7 @@ export const useSubjects = () => {
     const { data, error } = await supabase
       .from('subjects')
       .insert(values)
-      .select(`*, batches (name)`)
+      .select(`*, batches!batch_id (name)`)
       .single();
 
     if (error) {
@@ -58,7 +58,7 @@ export const useSubjects = () => {
       .from('subjects')
       .update(values)
       .eq('id', id)
-      .select(`*, batches (name)`)
+      .select(`*, batches!batch_id (name)`)
       .single();
 
     if (error) {
