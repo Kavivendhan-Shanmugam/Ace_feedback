@@ -4,39 +4,39 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 import { showError } from '@/utils/toast';
-import { DailySubject } from '@/types/supabase'; // Renamed import
-import { useProfile } from './useProfile'; // Import useProfile to get student's batch/semester
+import { DailySubject } from '@/types/supabase';
+import { useProfile } from './useProfile';
 
 const FEEDBACK_GRACE_PERIOD_MINUTES = 15;
 
-export const useDailySubjects = () => { // Renamed hook
+export const useDailySubjects = () => {
   const { session, isLoading: isSessionLoading } = useSession();
-  const { profile, loading: profileLoading } = useProfile(); // Get student's profile
-  const [dailySubjects, setDailySubjects] = useState<DailySubject[]>([]); // Renamed state variable
-  const [activeFeedbackSubject, setActiveFeedbackSubject] = useState<DailySubject | null>(null); // Renamed state variable
-  const [hasSubmittedFeedbackForActiveSubject, setHasSubmittedFeedbackForActiveSubject] = useState(false); // Renamed state variable
+  const { profile, loading: profileLoading } = useProfile();
+  const [dailySubjects, setDailySubjects] = useState<DailySubject[]>([]);
+  const [activeFeedbackSubject, setActiveFeedbackSubject] = useState<DailySubject | null>(null);
+  const [hasSubmittedFeedbackForActiveSubject, setHasSubmittedFeedbackForActiveSubject] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkFeedbackWindow = useCallback((subjectItem: DailySubject) => { // Renamed parameter
+  const checkFeedbackWindow = useCallback((subjectItem: DailySubject) => {
     const now = new Date();
     const [startHour, startMinute] = subjectItem.start_time.split(':').map(Number);
     const [endHour, endMinute] = subjectItem.end_time.split(':').map(Number);
 
-    const subjectStartTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute); // Renamed variable
-    const subjectEndTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute); // Renamed variable
+    const subjectStartTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+    const subjectEndTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
 
     const feedbackWindowEndTime = new Date(subjectEndTime.getTime() + FEEDBACK_GRACE_PERIOD_MINUTES * 60 * 1000);
 
-    return now >= subjectStartTime && now <= feedbackWindowEndTime; // Renamed variable
+    return now >= subjectStartTime && now <= feedbackWindowEndTime;
   }, []);
 
-  const fetchDailySubjects = useCallback(async () => { // Renamed function
+  const fetchDailySubjects = useCallback(async () => {
     setLoading(true);
     const userId = session?.user.id;
     const studentBatchId = profile?.batch_id;
     const studentSemesterNumber = profile?.semester_number;
 
-    if (!userId || !studentBatchId || !studentSemesterNumber) { // Ensure batch/semester are available
+    if (!userId || !studentBatchId || !studentSemesterNumber) {
       setLoading(false);
       setActiveFeedbackSubject(null);
       setHasSubmittedFeedbackForActiveSubject(false);
@@ -44,20 +44,20 @@ export const useDailySubjects = () => { // Renamed hook
       return;
     }
 
-    const currentDayOfWeek = new Date().getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
-    const supabaseDayOfWeek = currentDayOfWeek === 0 ? 7 : currentDayOfWeek; // Supabase uses 1 for Monday, 7 for Sunday
+    const currentDayOfWeek = new Date().getDay();
+    const supabaseDayOfWeek = currentDayOfWeek === 0 ? 7 : currentDayOfWeek;
 
     const { data: timetableEntries, error: timetableError } = await supabase
       .from('timetables')
       .select(`
-        subject_id, {/* Renamed from class_id */}
+        subject_id,
         start_time,
         end_time,
-        subjects (id, name, period) {/* Renamed from classes, added period */}
+        subjects (id, name, period)
       `)
       .eq('day_of_week', supabaseDayOfWeek)
-      .eq('batch_id', studentBatchId) // Filter by student's batch
-      .eq('semester_number', studentSemesterNumber) // Filter by student's semester
+      .eq('batch_id', studentBatchId)
+      .eq('semester_number', studentSemesterNumber)
       .order('start_time', { ascending: true });
 
     if (timetableError) {
@@ -67,63 +67,63 @@ export const useDailySubjects = () => { // Renamed hook
       return;
     }
 
-    const dailyScheduledSubjects: DailySubject[] = (timetableEntries || []) // Renamed variable
+    const dailyScheduledSubjects: DailySubject[] = (timetableEntries || [])
       .filter(entry => entry.subjects)
       .map(entry => ({
         id: entry.subjects!.id,
         name: entry.subjects!.name,
         start_time: entry.start_time,
         end_time: entry.end_time,
-        batch_id: studentBatchId, // Add batch_id
-        semester_number: studentSemesterNumber, // Add semester_number
+        batch_id: studentBatchId,
+        semester_number: studentSemesterNumber,
       }));
 
     const { data: feedbackData, error: feedbackError } = await supabase
       .from('feedback')
-      .select('subject_id') // Renamed from class_id
+      .select('subject_id')
       .eq('student_id', userId)
-      .eq('batch_id', studentBatchId) // Filter by student's batch
-      .eq('semester_number', studentSemesterNumber); // Filter by student's semester
+      .eq('batch_id', studentBatchId)
+      .eq('semester_number', studentSemesterNumber);
 
     if (feedbackError) {
       console.error("Error fetching student feedback:", feedbackError);
       showError("Failed to load feedback status.");
     }
 
-    const submittedSubjectIds = new Set(feedbackData?.map(f => f.subject_id)); // Renamed variable
+    const submittedSubjectIds = new Set(feedbackData?.map(f => f.subject_id));
 
-    const subjectsWithFeedbackStatus = dailyScheduledSubjects.map(sub => ({ // Renamed variable
+    const subjectsWithFeedbackStatus = dailyScheduledSubjects.map(sub => ({
       ...sub,
       hasSubmittedFeedback: submittedSubjectIds.has(sub.id),
     }));
 
-    setDailySubjects(subjectsWithFeedbackStatus); // Renamed state variable
+    setDailySubjects(subjectsWithFeedbackStatus);
 
-    const currentActive = subjectsWithFeedbackStatus.find(checkFeedbackWindow); // Renamed variable
-    setActiveFeedbackSubject(currentActive || null); // Renamed state variable
+    const currentActive = subjectsWithFeedbackStatus.find(checkFeedbackWindow);
+    setActiveFeedbackSubject(currentActive || null);
 
     if (currentActive) {
-      setHasSubmittedFeedbackForActiveSubject(currentActive.hasSubmittedFeedback || false); // Renamed state variable
+      setHasSubmittedFeedbackForActiveSubject(currentActive.hasSubmittedFeedback || false);
     } else {
-      setHasSubmittedFeedbackForActiveSubject(false); // Renamed state variable
+      setHasSubmittedFeedbackForActiveSubject(false);
     }
 
     setLoading(false);
-  }, [session?.user.id, profile?.batch_id, profile?.semester_number, checkFeedbackWindow]); // Added profile dependencies
+  }, [session?.user.id, profile?.batch_id, profile?.semester_number, checkFeedbackWindow]);
 
   useEffect(() => {
-    if (!isSessionLoading && !profileLoading && session) { // Wait for profile to load
+    if (!isSessionLoading && !profileLoading && session) {
       fetchDailySubjects();
-      const interval = setInterval(fetchDailySubjects, 60 * 1000); // Check every minute
+      const interval = setInterval(fetchDailySubjects, 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [session, isSessionLoading, profileLoading, fetchDailySubjects]); // Added profileLoading dependency
+  }, [session, isSessionLoading, profileLoading, fetchDailySubjects]);
 
   return {
-    dailySubjects, // Renamed return value
-    activeFeedbackSubject, // Renamed return value
-    hasSubmittedFeedbackForActiveSubject, // Renamed return value
+    dailySubjects,
+    activeFeedbackSubject,
+    hasSubmittedFeedbackForActiveSubject,
     loading,
-    fetchDailySubjects // Renamed return value
+    fetchDailySubjects
   };
 };
