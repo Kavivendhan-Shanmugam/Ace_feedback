@@ -53,7 +53,7 @@ export const useDailySubjects = () => {
         class_id,
         start_time,
         end_time,
-        subjects:class_id (id, name, period)
+        subjects (id, name, period)
       `)
       .eq('day_of_week', supabaseDayOfWeek)
       .eq('batch_id', studentBatchId)
