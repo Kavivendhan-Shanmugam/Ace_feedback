@@ -35,8 +35,8 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects!class_id(id, name, period),
-        batches!batch_id(name)
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .order('day_of_week', { ascending: true })
       .order('start_time', { ascending: true });
@@ -93,8 +93,8 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects!class_id(id, name, period),
-        batches!batch_id(name)
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .single();
 
@@ -152,8 +152,8 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects!class_id(id, name, period),
-        batches!batch_id(name)
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .single();
 
