@@ -65,7 +65,7 @@ export const useUserManager = () => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
-      .select(`*, batches (name)`) // Select updated fields including batch name
+      .select(`*, batches!batch_id(name)`) // Select updated fields including batch name
       .single();
 
     if (error) {
