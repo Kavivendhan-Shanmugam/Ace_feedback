@@ -40,12 +40,12 @@ export const useWeeklyTimetable = () => {
       .select(`
         id,
         day_of_week,
-        subject_id,
+        class_id,
         batch_id,
         semester_number,
         start_time,
         end_time,
-        subjects (id, name, period)
+        subjects:class_id (id, name, period)
       `)
       .eq('batch_id', studentBatchId)
       .eq('semester_number', studentSemesterNumber)

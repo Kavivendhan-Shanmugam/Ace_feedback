@@ -87,7 +87,7 @@ const TimetableManager: React.FC = () => {
     setEditingEntry(null);
     setFormInitialData({
       day_of_week: day,
-      subject_id: "",
+      class_id: "",
       batch_id: batchFilter !== 'all' ? batchFilter : "",
       semester_number: semesterFilter !== 'all' ? parseInt(semesterFilter) : undefined,
       start_time: "08:00",
@@ -100,7 +100,7 @@ const TimetableManager: React.FC = () => {
     setEditingEntry(entry);
     setFormInitialData({ 
       ...entry,
-      subject_id: entry.subject_id,
+      class_id: entry.class_id,
       batch_id: entry.batch_id || "",
       semester_number: entry.semester_number || undefined,
     });

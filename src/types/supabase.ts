@@ -34,18 +34,18 @@ export interface Subject {
 export interface TimetableEntry {
   id: string;
   day_of_week: number;
-  subject_id: string; // Renamed from class_id
+  class_id: string;
   batch_id: string | null;
   semester_number: number | null;
   created_at: string;
   start_time: string;
   end_time: string;
-  subjects: { // Joined subject data (formerly classes)
+  subjects: {
     id: string;
     name: string;
     period: number | null;
   };
-  batches?: { // Joined batch data
+  batches?: {
     name: string;
   };
 }
@@ -53,7 +53,7 @@ export interface TimetableEntry {
 export interface Feedback {
   id: string;
   student_id: string;
-  class_id: string; // Corrected from subject_id
+  class_id: string;
   batch_id: string | null;
   semester_number: number | null;
   rating: number;

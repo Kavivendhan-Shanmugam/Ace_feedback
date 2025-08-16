@@ -30,12 +30,12 @@ export const useTimetable = () => {
       .select(`
         id,
         day_of_week,
-        subject_id,
+        class_id,
         batch_id,
         semester_number,
         start_time,
         end_time,
-        subjects (id, name, period),
+        subjects:class_id (id, name, period),
         batches (name)
       `)
       .order('day_of_week', { ascending: true })
@@ -55,7 +55,7 @@ export const useTimetable = () => {
     fetchData();
   }, [fetchData]);
 
-  const addTimetableEntry = async (values: { day_of_week: number; subject_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
+  const addTimetableEntry = async (values: { day_of_week: number; class_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
     setIsSubmitting(true);
 
     const { data: dayEntries, error: dayEntriesError } = await supabase
@@ -88,12 +88,12 @@ export const useTimetable = () => {
       .select(`
         id,
         day_of_week,
-        subject_id,
+        class_id,
         batch_id,
         semester_number,
         start_time,
         end_time,
-        subjects (id, name, period),
+        subjects:class_id (id, name, period),
         batches (name)
       `)
       .single();
@@ -112,7 +112,7 @@ export const useTimetable = () => {
     }
   };
 
-  const updateTimetableEntry = async (id: string, values: { day_of_week: number; subject_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
+  const updateTimetableEntry = async (id: string, values: { day_of_week: number; class_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
     setIsSubmitting(true);
 
     const { data: dayEntries, error: dayEntriesError } = await supabase
@@ -147,12 +147,12 @@ export const useTimetable = () => {
       .select(`
         id,
         day_of_week,
-        subject_id,
+        class_id,
         batch_id,
         semester_number,
         start_time,
         end_time,
-        subjects (id, name, period),
+        subjects:class_id (id, name, period),
         batches (name)
       `)
       .single();

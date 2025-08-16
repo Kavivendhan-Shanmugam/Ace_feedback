@@ -24,7 +24,7 @@ const daysOfWeek = [
 
 const formSchema = z.object({
   day_of_week: z.coerce.number().min(1, "Day of week is required").max(7, "Invalid day of week"),
-  subject_id: z.string().min(1, "Subject is required"),
+  class_id: z.string().min(1, "Subject is required"),
   batch_id: z.string().min(1, "Batch is required"),
   semester_number: z.coerce.number().min(1, "Semester is required").max(8, "Semester must be between 1 and 8"),
   start_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid start time format (HH:MM)"),
@@ -51,7 +51,7 @@ const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSub
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       day_of_week: 1,
-      subject_id: "",
+      class_id: "",
       batch_id: "",
       semester_number: undefined,
       start_time: "08:00",
@@ -135,7 +135,7 @@ const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSub
         />
         <FormField
           control={form.control}
-          name="subject_id"
+          name="class_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Subject</FormLabel>
@@ -187,7 +187,7 @@ const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSub
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {initialData?.subject_id ? "Update Entry" : "Add to Timetable"}
+            {initialData?.class_id ? "Update Entry" : "Add to Timetable"}
           </Button>
         </div>
       </form>
