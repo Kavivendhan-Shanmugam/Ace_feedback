@@ -23,7 +23,7 @@ export const useFeedbackManager = () => {
         is_response_seen_by_student,
         subject_id,
         subjects (name, period),
-        profiles (first_name, last_name),
+        profiles:student_id (first_name, last_name),
         batches (name)
       `)
       .order('created_at', { ascending: false });
