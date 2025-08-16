@@ -53,24 +53,26 @@ export interface TimetableEntry {
 export interface Feedback {
   id: string;
   student_id: string;
-  subject_id: string; // Renamed from class_id
+  class_id: string; // Corrected from subject_id
   batch_id: string | null;
   semester_number: number | null;
   rating: number;
   comment: string | null;
   admin_response: string | null;
   created_at: string;
-  is_response_seen_by_student?: boolean; // Added for notifications
-  subjects: { // Simplified for feedback join (formerly classes)
+  is_response_seen_by_student?: boolean;
+  subjects: {
     name: string;
+    period?: number | null;
   };
-  profiles?: { // Simplified for feedback join
+  profiles?: {
     first_name: string | null;
     last_name: string | null;
     batch_id: string | null;
     semester_number: number | null;
+    avatar_url?: string | null;
   };
-  batches?: { // Joined batch data
+  batches?: {
     name: string;
   };
 }
@@ -87,7 +89,7 @@ export interface DailySubject { // Renamed from DailyClass
 }
 
 export interface FeedbackHistoryEntry extends Feedback {
-  subjects: { // Renamed from classes
+  subjects: {
     name: string;
   };
 }

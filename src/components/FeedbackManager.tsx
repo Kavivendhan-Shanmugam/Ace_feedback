@@ -51,7 +51,7 @@ const FeedbackManager: React.FC = () => {
 
   useEffect(() => {
     if (location.state) {
-      const { subjectId, studentName, feedbackId } = location.state; // Renamed classId to subjectId
+      const { subjectId, studentName, feedbackId } = location.state;
       
       // Prioritize direct feedback ID linking
       if (feedbackId && feedbackEntries.length > 0) {
@@ -64,7 +64,7 @@ const FeedbackManager: React.FC = () => {
         }
       } else {
         // Handle older filter-based navigation
-        if (subjectId) setSubjectFilter(subjectId); // Renamed
+        if (subjectId) setSubjectFilter(subjectId);
         if (studentName) setSearchTerm(studentName);
       }
       
@@ -82,20 +82,20 @@ const FeedbackManager: React.FC = () => {
     searchTerm !== '',
   ].filter(Boolean).length;
 
-  const availableSubjects = useMemo(() => { // Renamed
+  const availableSubjects = useMemo(() => {
     if (!feedbackEntries) return [];
-    const uniqueSubjects = new Map<string, { name: string; period: number | null; batchName: string | undefined; semesterNumber: number | null }>(); // Added batchName, semesterNumber
+    const uniqueSubjects = new Map<string, { name: string; period: number | null; batchName: string | undefined; semesterNumber: number | null }>();
     feedbackEntries.forEach(entry => {
-      if (entry.subjects && !uniqueSubjects.has(entry.subject_id)) { // Renamed
-        uniqueSubjects.set(entry.subject_id, { // Renamed
+      if (entry.subjects && !uniqueSubjects.has(entry.class_id)) {
+        uniqueSubjects.set(entry.class_id, {
           name: entry.subjects.name,
           period: entry.subjects.period,
-          batchName: entry.batches?.name, // Get batch name
-          semesterNumber: entry.semester_number, // Get semester number
+          batchName: entry.batches?.name,
+          semesterNumber: entry.semester_number,
         });
       }
     });
-    return Array.from(uniqueSubjects.entries()).map(([id, data]) => ({ id, ...data })).sort((a, b) => a.name.localeCompare(b.name)); // Sort by subject name
+    return Array.from(uniqueSubjects.entries()).map(([id, data]) => ({ id, ...data })).sort((a, b) => a.name.localeCompare(b.name));
   }, [feedbackEntries]);
 
   const filteredFeedback = useMemo(() => {
@@ -107,13 +107,13 @@ const FeedbackManager: React.FC = () => {
     if (ratingFilter.length > 0) {
       filtered = filtered.filter(entry => ratingFilter.includes(entry.rating.toString()));
     }
-    if (subjectFilter !== 'all') { // Renamed
-      filtered = filtered.filter(entry => entry.subject_id === subjectFilter); // Renamed
+    if (subjectFilter !== 'all') {
+      filtered = filtered.filter(entry => entry.class_id === subjectFilter);
     }
-    if (batchFilter !== 'all') { // New filter
+    if (batchFilter !== 'all') {
       filtered = filtered.filter(entry => entry.batch_id === batchFilter);
     }
-    if (semesterFilter !== 'all') { // New filter
+    if (semesterFilter !== 'all') {
       filtered = filtered.filter(entry => entry.semester_number === parseInt(semesterFilter));
     }
     if (searchTerm) {
@@ -127,7 +127,7 @@ const FeedbackManager: React.FC = () => {
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return filtered;
-  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, searchTerm]); // Added new filters
+  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, searchTerm]);
 
   const selectedFeedback = useMemo(() => {
     return feedbackEntries.find(f => f.id === selectedFeedbackId) || null;
@@ -178,9 +178,9 @@ const FeedbackManager: React.FC = () => {
                 <div className="flex-grow">
                   <p className="font-semibold">{feedback.profiles?.first_name} {feedback.profiles?.last_name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {feedback.subjects.name} {/* Renamed from classes.name */}
-                    {feedback.batches?.name && ` (${feedback.batches.name})`} {/* Display batch name */}
-                    {feedback.semester_number && ` Sem ${feedback.semester_number}`} {/* Display semester number */}
+                    {feedback.subjects.name}
+                    {feedback.batches?.name && ` (${feedback.batches.name})`}
+                    {feedback.semester_number && ` Sem ${feedback.semester_number}`}
                   </p>
                 </div>
                 <RatingStars rating={feedback.rating} />
@@ -227,13 +227,13 @@ const FeedbackManager: React.FC = () => {
         </div>
         <CollapsibleContent>
           <div className="flex flex-col gap-4 p-4 border-t">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Adjusted grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 placeholder="Search by student name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}> {/* New batch filter */}
+              <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by Batch..." />
                 </SelectTrigger>
@@ -244,7 +244,7 @@ const FeedbackManager: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={semesterFilter} onValueChange={setSemesterFilter}> {/* New semester filter */}
+              <Select value={semesterFilter} onValueChange={setSemesterFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by Semester..." />
                 </SelectTrigger>
@@ -256,15 +256,15 @@ const FeedbackManager: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Adjusted grid */}
-              <Select value={subjectFilter} onValueChange={setSubjectFilter}> {/* Renamed from classFilter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={subjectFilter} onValueChange={setSubjectFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by subject..." /> {/* Renamed */}
+                  <SelectValue placeholder="Filter by subject..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Subjects</SelectItem> {/* Renamed */}
-                  {availableSubjects.map(sub => ( // Renamed
-                    <SelectItem key={sub.id} value={sub.id}>{sub.name} {sub.period ? `(P${sub.period})` : ''}</SelectItem> // Display period
+                  <SelectItem value="all">All Subjects</SelectItem>
+                  {availableSubjects.map(sub => (
+                    <SelectItem key={sub.id} value={sub.id}>{sub.name} {sub.period ? `(P${sub.period})` : ''}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

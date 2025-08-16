@@ -61,7 +61,7 @@ const StudentDashboard = () => {
     setIsSubmittingFeedback(true);
     const { error } = await supabase.from('feedback').insert({
       student_id: session.user.id,
-      subject_id: activeFeedbackSubject.id, // Renamed from class_id
+      class_id: activeFeedbackSubject.id, // Corrected from subject_id
       batch_id: profile.batch_id, // Pass batch_id from profile
       semester_number: profile.semester_number, // Pass semester_number from profile
       rating: values.rating,
