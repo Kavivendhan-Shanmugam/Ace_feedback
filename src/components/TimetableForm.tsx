@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle } from 'lucide-react';
 import { Subject } from '@/types/supabase';
 import { useBatches } from '@/hooks/useBatches';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import BatchForm from './BatchForm';
 
 const daysOfWeek = [
   { value: 1, label: 'Monday' },
@@ -45,7 +47,8 @@ interface TimetableFormProps {
 }
 
 const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSubjects, onSubmit, onCancel, isSubmitting }) => {
-  const { batches, loading: batchesLoading } = useBatches();
+  const { batches, loading: batchesLoading, addBatch, isSubmitting: isSubmittingBatch } = useBatches();
+  const [isAddBatchOpen, setIsAddBatchOpen] = useState(false);
 
   const form = useForm<TimetableFormValues>({
     resolver: zodResolver(formSchema),
@@ -62,6 +65,14 @@ const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSub
   const handleCancel = () => {
     form.reset();
     onCancel();
+  };
+
+  const handleAddBatch = async (values: { name: string }) => {
+    const newBatch = await addBatch(values);
+    if (newBatch) {
+      form.setValue('batch_id', newBatch.id, { shouldValidate: true });
+      setIsAddBatchOpen(false);
+    }
   };
 
   return (
@@ -95,18 +106,37 @@ const TimetableForm: React.FC<TimetableFormProps> = ({ initialData, availableSub
           render={({ field }) => (
             <FormItem>
               <FormLabel>Batch</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={batchesLoading}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a batch" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {batches.map((batch) => (
-                    <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <Select onValueChange={field.onChange} value={field.value} disabled={batchesLoading}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a batch" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {batches.map((batch) => (
+                      <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Dialog open={isAddBatchOpen} onOpenChange={setIsAddBatchOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="icon" aria-label="Add new batch">
+                      <PlusCircle className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Batch</DialogTitle>
+                    </DialogHeader>
+                    <BatchForm
+                      onSubmit={handleAddBatch}
+                      onCancel={() => setIsAddBatchOpen(false)}
+                      isSubmitting={isSubmittingBatch}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
               <FormMessage />
             </FormItem>
           )}

@@ -1,16 +1,18 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
-import { Subject } from '@/types/supabase'; // Import Subject
+import { Loader2, PlusCircle } from 'lucide-react';
+import { Subject } from '@/types/supabase';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useBatches } from '@/hooks/useBatches'; // New hook for batches
+import { useBatches } from '@/hooks/useBatches';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import BatchForm from './BatchForm';
 
 const formSchema = z.object({
   name: z.string().min(1, "Subject name is required"),
@@ -22,14 +24,15 @@ const formSchema = z.object({
 type SubjectFormValues = z.infer<typeof formSchema>;
 
 interface SubjectFormProps {
-  initialData?: Omit<Subject, 'id' | 'created_at' | 'batches'>; // Use Omit to exclude id, created_at, and batches
+  initialData?: Omit<Subject, 'id' | 'created_at' | 'batches'>;
   onSubmit: (data: SubjectFormValues) => void;
   onCancel: () => void;
   isSubmitting: boolean;
 }
 
 const SubjectForm: React.FC<SubjectFormProps> = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
-  const { batches, loading: batchesLoading } = useBatches(); // Fetch available batches
+  const { batches, loading: batchesLoading, addBatch, isSubmitting: isSubmittingBatch } = useBatches();
+  const [isAddBatchOpen, setIsAddBatchOpen] = useState(false);
 
   const form = useForm<SubjectFormValues>({
     resolver: zodResolver(formSchema),
@@ -42,8 +45,16 @@ const SubjectForm: React.FC<SubjectFormProps> = ({ initialData, onSubmit, onCanc
   });
 
   const handleCancel = () => {
-    form.reset(); // Reset form fields on cancel
+    form.reset();
     onCancel();
+  };
+
+  const handleAddBatch = async (values: { name: string }) => {
+    const newBatch = await addBatch(values);
+    if (newBatch) {
+      form.setValue('batch_id', newBatch.id, { shouldValidate: true });
+      setIsAddBatchOpen(false);
+    }
   };
 
   return (
@@ -81,18 +92,37 @@ const SubjectForm: React.FC<SubjectFormProps> = ({ initialData, onSubmit, onCanc
           render={({ field }) => (
             <FormItem>
               <FormLabel>Batch</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={batchesLoading}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a batch" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {batches.map((batch) => (
-                    <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <Select onValueChange={field.onChange} value={field.value} disabled={batchesLoading}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a batch" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {batches.map((batch) => (
+                      <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Dialog open={isAddBatchOpen} onOpenChange={setIsAddBatchOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="icon" aria-label="Add new batch">
+                      <PlusCircle className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Batch</DialogTitle>
+                    </DialogHeader>
+                    <BatchForm
+                      onSubmit={handleAddBatch}
+                      onCancel={() => setIsAddBatchOpen(false)}
+                      isSubmitting={isSubmittingBatch}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
               <FormMessage />
             </FormItem>
           )}
