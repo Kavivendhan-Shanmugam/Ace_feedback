@@ -15,7 +15,6 @@ import AdminFeedbackPage from "./pages/admin/Feedback";
 import AdminUsersPage from "./pages/admin/Users";
 import AdminAnalyticsPage from "./pages/admin/Analytics";
 import StudentFeedbackHistoryPage from "./pages/StudentFeedbackHistoryPage";
-import AdminBatchesPage from "./pages/admin/Batches";
 
 const App = () => (
   <div className="flex flex-col min-h-screen">
@@ -72,7 +71,6 @@ const App = () => (
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="batches" element={<AdminBatchesPage />} />
         <Route path="subjects" element={<AdminSubjectsPage />} />
         <Route path="timetable" element={<AdminTimetablePage />} />
         <Route path="feedback" element={<AdminFeedbackPage />} />
