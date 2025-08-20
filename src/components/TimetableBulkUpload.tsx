@@ -35,12 +35,44 @@ const TimetableBulkUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownloadTemplate = () => {
+    const periodTimes = [
+      { period: 1, start: "08:30", end: "09:20" },
+      { period: 2, start: "09:25", end: "10:15" },
+      { period: 3, start: "10:20", end: "11:10" },
+      { period: 4, start: "11:15", end: "12:05" },
+      { period: 5, start: "13:00", end: "13:50" },
+      { period: 6, start: "13:55", end: "14:45" },
+      { period: 7, start: "14:50", end: "15:40" },
+    ];
+
+    const days = [
+      { value: 1, label: 'Monday' },
+      { value: 2, label: 'Tuesday' },
+      { value: 3, label: 'Wednesday' },
+      { value: 4, label: 'Thursday' },
+      { value: 5, label: 'Friday' },
+      { value: 6, label: 'Saturday' },
+    ];
+
     const ws_data = [
       ["day_of_week", "subject_name", "period", "batch_name", "semester_number", "start_time", "end_time"],
-      [1, "Calculus I", null, "2024-2028", 1, "09:00", "10:00"],
-      [1, "Physics II", 2, "2024-2028", 1, "10:00", "11:00"],
-      [2, "Chemistry I", null, "2025-2029", 2, "11:00", "12:00"]
     ];
+
+    // Add example rows for Monday and Tuesday
+    days.slice(0, 2).forEach(day => { // Only generate for Monday and Tuesday as examples
+      periodTimes.forEach(p => {
+        ws_data.push([
+          day.value,
+          `Subject ${p.period} (${day.label})`, // Example subject name
+          p.period,
+          "2024-2028", // Example batch
+          1, // Example semester
+          p.start,
+          p.end,
+        ]);
+      });
+    });
+
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Timetable");
