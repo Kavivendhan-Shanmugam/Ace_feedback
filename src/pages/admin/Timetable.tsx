@@ -13,7 +13,7 @@ import TimetableForm from '@/components/TimetableForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBatches } from '@/hooks/useBatches';
-import TimetableBulkUpload from '@/components/TimetableBulkUpload'; // Import the new component
+import TimetableBulkUpload from '@/components/TimetableBulkUpload';
 import { formatTime } from '@/lib/utils';
 
 const daysOfWeek = [
@@ -26,7 +26,7 @@ const daysOfWeek = [
   { value: 7, label: 'Sunday' },
 ];
 
-const TimetableManager: React.FC = () => {
+const AdminTimetablePage: React.FC = () => {
   const { timetableEntries, availableSubjects, loading, isSubmitting, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry, fetchData } = useTimetable();
   const { batches, loading: batchesLoading } = useBatches();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -232,4 +232,4 @@ const TimetableManager: React.FC = () => {
   );
 };
 
-export default TimetableManager;
+export default AdminTimetablePage;
