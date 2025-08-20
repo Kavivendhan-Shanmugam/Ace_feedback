@@ -155,7 +155,9 @@ const UserManager: React.FC = () => {
             <TableBody>
               {filteredUsers.map((user: Profile) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.first_name || 'N/A'} {user.last_name || 'N/A'}</TableCell>
+                  <TableCell>
+                    {user.is_admin ? `${user.first_name || 'N/A'} ${user.last_name || 'N/A'}` : 'Student'}
+                  </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.batches?.name || 'N/A'}</TableCell> {/* Display batch name */}
                   <TableCell>{user.semester_number || 'N/A'}</TableCell> {/* Display semester number */}
