@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trash2, Edit, PlusCircle } from 'lucide-react';
+import { Trash2, Edit, PlusCircle, CalendarCheck2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ConfirmAlertDialog from '@/components/ConfirmAlertDialog';
 import { useTimetable } from '@/hooks/useTimetable';
@@ -35,7 +35,10 @@ const AdminTimetablePage: React.FC = () => {
   const [batchFilter, setBatchFilter] = useState('all');
   const [semesterFilter, setSemesterFilter] = useState('all');
 
+  const isFilterSelected = batchFilter !== 'all' && semesterFilter !== 'all';
+
   const filteredTimetableEntries = useMemo(() => {
+    if (!isFilterSelected) return [];
     let filtered = timetableEntries;
 
     if (batchFilter !== 'all') {
@@ -46,7 +49,7 @@ const AdminTimetablePage: React.FC = () => {
       filtered = filtered.filter(entry => entry.semester_number === parseInt(semesterFilter));
     }
     return filtered;
-  }, [timetableEntries, batchFilter, semesterFilter]);
+  }, [timetableEntries, batchFilter, semesterFilter, isFilterSelected]);
 
   const groupedTimetable = useMemo(() => {
     const groups: { [key: number]: TimetableEntry[] } = {};
@@ -129,31 +132,37 @@ const AdminTimetablePage: React.FC = () => {
           </TabsList>
 
           <TabsContent value="manage" className="mt-4">
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 border rounded-lg">
               <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Filter by Batch" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
+                  <SelectItem value="all">Select a Batch</SelectItem>
                   {batches.map(batch => (
                     <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Filter by Semester" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Semesters</SelectItem>
+                  <SelectItem value="all">Select a Semester</SelectItem>
                   {Array.from({ length: 8 }, (_, i) => i + 1).map(sem => (
-                    <SelectItem key={sem} value={sem.toString()}>{sem}</SelectItem>
+                    <SelectItem key={sem} value={sem.toString()}>{`Semester ${sem}`}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            {loading ? (
+            {!isFilterSelected ? (
+              <div className="text-center py-16 text-muted-foreground flex flex-col items-center justify-center">
+                <CalendarCheck2 className="h-12 w-12 mb-4" />
+                <p className="font-semibold text-lg">Please select a batch and a semester.</p>
+                <p className="text-sm">The timetable for the selected group will be displayed here.</p>
+              </div>
+            ) : loading ? (
               <Skeleton className="h-[400px] w-full" />
             ) : (
               <Tabs defaultValue="1" className="w-full">
@@ -177,8 +186,6 @@ const AdminTimetablePage: React.FC = () => {
                                 <p className="font-semibold">{entry.subjects.name} {entry.subjects.period ? `(P${entry.subjects.period})` : ''}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
-                                  {entry.batches?.name && ` (${entry.batches.name})`}
-                                  {entry.semester_number && ` Sem ${entry.semester_number}`}
                                 </p>
                               </div>
                               <div className="flex items-center space-x-2">
