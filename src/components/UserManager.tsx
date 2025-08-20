@@ -115,7 +115,7 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead> {/* Changed from Name */}
+                <TableHead>Student</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
@@ -144,7 +144,7 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead> {/* Changed from Name */}
+                <TableHead>Student</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
