@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatTime } from '@/lib/utils'; // Import the new utility
 
 const StudentTimetable = () => {
   const { groupedTimetable, loading, daysOfWeek } = useWeeklyTimetable();
@@ -28,7 +29,7 @@ const StudentTimetable = () => {
       <Card className="w-full max-w-5xl mx-auto">
         <CardHeader>
           <CardTitle>Schedule</CardTitle>
-          <CardDescription>Your subject schedule for the week.</CardDescription> {/* Renamed description */}
+          <CardDescription>Your subject schedule for the week.</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
           {loading ? (
@@ -45,14 +46,14 @@ const StudentTimetable = () => {
                   <div className="mt-4 space-y-4">
                     {groupedTimetable[day.value].length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">
-                        <p>No subjects scheduled for {day.label}.</p> {/* Renamed text */}
+                        <p>No subjects scheduled for {day.label}.</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         {groupedTimetable[day.value].map(entry => (
                           <div key={entry.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
-                            <p className="font-semibold">{entry.subjects.name} {entry.subjects.period ? `(P${entry.subjects.period})` : ''}</p> {/* Renamed from classes.name, added period */}
-                            <p className="text-sm text-muted-foreground">{entry.start_time} - {entry.end_time}</p>
+                            <p className="font-semibold">{entry.subjects.name} {entry.subjects.period ? `(P${entry.subjects.period})` : ''}</p>
+                            <p className="text-sm text-muted-foreground">{formatTime(entry.start_time)} - {formatTime(entry.end_time)}</p>
                           </div>
                         ))}
                       </div>
