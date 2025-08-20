@@ -11,7 +11,13 @@ import { Loader2 } from 'lucide-react';
 import { Batch } from '@/types/supabase';
 
 const formSchema = z.object({
-  name: z.string().min(1, "Batch name is required"),
+  name: z.string()
+    .regex(/^\d{4}$/, "Please enter a 4-digit year (e.g., 2024)")
+    .transform(yearStr => {
+      const startYear = parseInt(yearStr, 10);
+      const endYear = startYear + 4;
+      return `${startYear}-${endYear}`;
+    }),
 });
 
 type BatchFormValues = z.infer<typeof formSchema>;
@@ -44,9 +50,9 @@ const BatchForm: React.FC<BatchFormProps> = ({ initialData, onSubmit, onCancel, 
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Batch Name</FormLabel>
+              <FormLabel>Batch Name (e.g., 2024)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., 2024-2028 CSE" {...field} />
+                <Input placeholder="e.g., 2024" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
