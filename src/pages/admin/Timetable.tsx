@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBatches } from '@/hooks/useBatches';
 import TimetableBulkUpload from '@/components/TimetableBulkUpload'; // Import the new component
+import { formatTime } from '@/lib/utils';
 
 const daysOfWeek = [
   { value: 1, label: 'Monday' },
@@ -175,7 +176,7 @@ const TimetableManager: React.FC = () => {
                               <div>
                                 <p className="font-semibold">{entry.subjects.name} {entry.subjects.period ? `(P${entry.subjects.period})` : ''}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {entry.start_time} - {entry.end_time}
+                                  {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
                                   {entry.batches?.name && ` (${entry.batches.name})`}
                                   {entry.semester_number && ` Sem ${entry.semester_number}`}
                                 </p>
