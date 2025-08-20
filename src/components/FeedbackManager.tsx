@@ -14,10 +14,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } => '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import FeedbackDetail from './admin/FeedbackDetail';
-import { useBatches } from '@/hooks/useBatches'; // Import useBatches
+import { useBatches } from '@/hooks/useBatches';
+import FeedbackTrends from './admin/FeedbackTrends';
+import FeedbackBreakdown from './admin/FeedbackBreakdown';
+import { Separator } from './ui/separator';
 
 const FeedbackManager: React.FC = () => {
   const {
@@ -27,7 +30,7 @@ const FeedbackManager: React.FC = () => {
     updateAdminResponse,
     deleteFeedback,
   } = useFeedbackManager();
-  const { batches, loading: batchesLoading } = useBatches(); // Fetch batches
+  const { batches, loading: batchesLoading } = useBatches();
   const location = useLocation();
   
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
@@ -35,17 +38,17 @@ const FeedbackManager: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState<string[]>([]);
-  const [subjectFilter, setSubjectFilter] = useState('all'); // Renamed from classFilter
-  const [batchFilter, setBatchFilter] = useState('all'); // New filter
-  const [semesterFilter, setSemesterFilter] = useState('all'); // New filter
+  const [subjectFilter, setSubjectFilter] = useState('all');
+  const [batchFilter, setBatchFilter] = useState('all');
+  const [semesterFilter, setSemesterFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleClearFilters = () => {
     setStatusFilter('all');
     setRatingFilter([]);
-    setSubjectFilter('all'); // Renamed
-    setBatchFilter('all'); // New
-    setSemesterFilter('all'); // New
+    setSubjectFilter('all');
+    setBatchFilter('all');
+    setSemesterFilter('all');
     setSearchTerm('');
   };
 
@@ -68,7 +71,7 @@ const FeedbackManager: React.FC = () => {
         if (studentName) setSearchTerm(studentName);
       }
       
-      // Clear the state to prevent re-triggering on component re-renders
+      // Clear the location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
   }, [location.state, feedbackEntries]);
@@ -76,9 +79,9 @@ const FeedbackManager: React.FC = () => {
   const activeFilterCount = [
     statusFilter !== 'all',
     ratingFilter.length > 0,
-    subjectFilter !== 'all', // Renamed
-    batchFilter !== 'all', // New
-    semesterFilter !== 'all', // New
+    subjectFilter !== 'all',
+    batchFilter !== 'all',
+    semesterFilter !== 'all',
     searchTerm !== '',
   ].filter(Boolean).length;
 
@@ -176,11 +179,9 @@ const FeedbackManager: React.FC = () => {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-grow">
-                  <p className="font-semibold">{feedback.profiles?.first_name} {feedback.profiles?.last_name}</p>
+                  <p className="font-semibold">{feedback.subjects.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {feedback.subjects.name}
-                    {feedback.batches?.name && ` (${feedback.batches.name})`}
-                    {feedback.semester_number && ` Sem ${feedback.semester_number}`}
+                    {new Date(feedback.created_at).toLocaleString()}
                   </p>
                 </div>
                 <RatingStars rating={feedback.rating} />
@@ -290,6 +291,13 @@ const FeedbackManager: React.FC = () => {
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <div className="flex flex-col gap-8 px-6 pb-6">
+        <FeedbackTrends batchId={batchFilter === 'all' ? undefined : batchFilter} semesterNumber={semesterFilter === 'all' ? undefined : parseInt(semesterFilter)} />
+        <Separator />
+        <FeedbackBreakdown batchId={batchFilter === 'all' ? undefined : batchFilter} semesterNumber={semesterFilter === 'all' ? undefined : parseInt(semesterFilter)} />
+        <Separator />
+      </div>
 
       <div className="flex-grow overflow-hidden px-6 pb-6">
         <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">

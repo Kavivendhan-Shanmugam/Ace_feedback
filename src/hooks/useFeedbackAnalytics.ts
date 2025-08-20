@@ -3,26 +3,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
-import { SubjectFeedbackStats } from '@/types/supabase'; // Renamed import
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { SubjectFeedbackStats } from '@/types/supabase';
+import { useSession } from '@/components/SessionContextProvider';
 
-export const useFeedbackAnalytics = () => {
-  const { isAdmin, isLoading: isSessionLoading } = useSession(); // Get isAdmin and session loading state
-  const [feedbackStats, setFeedbackStats] = useState<SubjectFeedbackStats[]>([]); // Renamed state variable
+export const useFeedbackAnalytics = (batchId?: string | null, semesterNumber?: number | null) => { // Added batchId and semesterNumber
+  const { isAdmin, isLoading: isSessionLoading } = useSession();
+  const [feedbackStats, setFeedbackStats] = useState<SubjectFeedbackStats[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFeedbackStats = useCallback(async () => {
-    if (!isAdmin) { // Only fetch if user is admin
+    if (!isAdmin) {
       setFeedbackStats([]);
       setLoading(false);
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_subject_feedback_stats'); // Renamed RPC call
+    const { data, error } = await supabase.rpc('get_subject_feedback_stats', {
+      p_batch_id: batchId, // Pass batchId
+      p_semester_number: semesterNumber, // Pass semesterNumber
+    });
 
     if (error) {
       console.error("Error fetching feedback for analytics:", error);
-      if (error?.code !== '42501') { // 42501 is permission denied
+      if (error?.code !== '42501') {
         showError("Failed to load feedback analytics.");
       }
       setFeedbackStats([]);
@@ -30,14 +33,14 @@ export const useFeedbackAnalytics = () => {
       setFeedbackStats(data || []);
     }
     setLoading(false);
-  }, [isAdmin]); // Add isAdmin to dependencies
+  }, [isAdmin, batchId, semesterNumber]); // Add batchId and semesterNumber to dependencies
 
   useEffect(() => {
-    if (!isSessionLoading) { // Only fetch once session loading is complete
+    if (!isSessionLoading) {
       fetchFeedbackStats();
 
       const channel = supabase
-        .channel('feedback-analytics-changes')
+        .channel(`feedback-analytics-changes-${batchId || 'no-batch'}-${semesterNumber || 'no-semester'}`) // Unique channel name
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'feedback' },
@@ -49,7 +52,7 @@ export const useFeedbackAnalytics = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [fetchFeedbackStats, isSessionLoading]); // Add isSessionLoading to dependencies
+  }, [fetchFeedbackStats, isSessionLoading, batchId, semesterNumber]); // Add batchId and semesterNumber to dependencies
 
   return {
     feedbackStats,
