@@ -115,10 +115,10 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Student</TableHead> {/* Changed from Name */}
                 <TableHead>Email</TableHead>
-                <TableHead>Batch</TableHead> {/* New column */}
-                <TableHead>Semester</TableHead> {/* New column */}
+                <TableHead>Batch</TableHead>
+                <TableHead>Semester</TableHead>
                 <TableHead className="text-center">Admin</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -128,8 +128,8 @@ const UserManager: React.FC = () => {
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell> {/* Skeleton for new column */}
-                  <TableCell><Skeleton className="h-6 w-16" /></TableCell> {/* Skeleton for new column */}
+                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
                   <TableCell className="text-center"><Skeleton className="h-6 w-16 mx-auto" /></TableCell>
                   <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                 </TableRow>
@@ -144,10 +144,10 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Student</TableHead> {/* Changed from Name */}
                 <TableHead>Email</TableHead>
-                <TableHead>Batch</TableHead> {/* New column */}
-                <TableHead>Semester</TableHead> {/* New column */}
+                <TableHead>Batch</TableHead>
+                <TableHead>Semester</TableHead>
                 <TableHead className="text-center">Admin</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -159,8 +159,8 @@ const UserManager: React.FC = () => {
                     {user.is_admin ? `${user.first_name || 'N/A'} ${user.last_name || 'N/A'}` : 'Student'}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.batches?.name || 'N/A'}</TableCell> {/* Display batch name */}
-                  <TableCell>{user.semester_number || 'N/A'}</TableCell> {/* Display semester number */}
+                  <TableCell>{user.batches?.name || 'N/A'}</TableCell>
+                  <TableCell>{user.semester_number || 'N/A'}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center space-x-2">
                       <Switch
@@ -208,8 +208,8 @@ const UserManager: React.FC = () => {
                 first_name: editingUser.first_name || "",
                 last_name: editingUser.last_name || "",
                 is_admin: editingUser.is_admin,
-                batch_id: editingUser.batch_id || "", // Pass batch_id
-                semester_number: editingUser.semester_number || undefined, // Pass semester_number
+                batch_id: editingUser.batch_id || "",
+                semester_number: editingUser.semester_number || undefined,
               }}
               onSubmit={handleUpdateUser}
               onCancel={closeEditForm}
