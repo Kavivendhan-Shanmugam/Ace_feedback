@@ -27,7 +27,7 @@ const daysOfWeek = [
 ];
 
 const TimetableManager: React.FC = () => {
-  const { timetableEntries, availableSubjects, loading, isSubmitting, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry } = useTimetable();
+  const { timetableEntries, availableSubjects, loading, isSubmitting, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry, fetchData } = useTimetable();
   const { batches, loading: batchesLoading } = useBatches();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
@@ -210,7 +210,7 @@ const TimetableManager: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="bulk-upload" className="mt-4">
-            <TimetableBulkUpload />
+            <TimetableBulkUpload onUploadSuccess={fetchData} />
           </TabsContent>
         </Tabs>
       </CardContent>

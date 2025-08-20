@@ -28,7 +28,11 @@ const timetableRowSchema = z.object({
 
 type TimetableRow = z.infer<typeof timetableRowSchema>;
 
-const TimetableBulkUpload: React.FC = () => {
+interface TimetableBulkUploadProps {
+  onUploadSuccess: () => void;
+}
+
+const TimetableBulkUpload: React.FC<TimetableBulkUploadProps> = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorDetails, setErrorDetails] = useState<string[]>([]);
@@ -204,6 +208,7 @@ const TimetableBulkUpload: React.FC = () => {
         } else {
           setUploadStatus('success');
           showSuccess(`Successfully added ${entriesToInsert.length} timetable entries!`);
+          onUploadSuccess(); // Trigger the refresh
         }
 
       } catch (error: any) {
