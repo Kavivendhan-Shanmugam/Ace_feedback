@@ -12,7 +12,7 @@ import { useUserManager } from '@/hooks/useUserManager';
 import { Profile } from '@/types/supabase'; // Import Profile
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react'; // Import Trash2 icon
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import EditUserForm from './EditUserForm'; // Import the new form
 import ConfirmAlertDialog from './ConfirmAlertDialog'; // Import ConfirmAlertDialog
 import { Input } from '@/components/ui/input'; // Import Input for search
@@ -196,6 +196,9 @@ const UserManager: React.FC = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit User Profile</DialogTitle>
+            <DialogDescription>
+              Make changes to the user's profile here. Click update when you're done.
+            </DialogDescription>
           </DialogHeader>
           {editingUser && (
             <EditUserForm

@@ -11,7 +11,7 @@ import { Loader2, PlusCircle } from 'lucide-react';
 import { Subject } from '@/types/supabase';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBatches } from '@/hooks/useBatches';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import BatchForm from './BatchForm';
 
 const formSchema = z.object({
@@ -114,6 +114,9 @@ const SubjectForm: React.FC<SubjectFormProps> = ({ initialData, onSubmit, onCanc
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Add New Batch</DialogTitle>
+                      <DialogDescription>
+                        Add a new batch to the system. The name will be formatted as YYYY-YYYY.
+                      </DialogDescription>
                     </DialogHeader>
                     <BatchForm
                       onSubmit={handleAddBatch}

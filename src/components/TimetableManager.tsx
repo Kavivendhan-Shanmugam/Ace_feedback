@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Trash2, Edit, PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ConfirmAlertDialog from './ConfirmAlertDialog';
@@ -204,6 +204,9 @@ const TimetableManager: React.FC = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{editingEntry ? "Edit Timetable Entry" : "Add New Timetable Entry"}</DialogTitle>
+            <DialogDescription>
+              Fill in the details for the timetable entry. Click save when you're done.
+            </DialogDescription>
           </DialogHeader>
           <TimetableForm
             initialData={formInitialData}

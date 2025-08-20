@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import SubjectForm from './SubjectForm'; // Renamed import
 import { Trash2, Edit, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -87,6 +87,9 @@ const SubjectManager: React.FC = () => {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>{editingSubject ? "Edit Subject" : "Add New Subject"}</DialogTitle>
+              <DialogDescription>
+                Make changes to the subject here. Click save when you're done.
+              </DialogDescription>
             </DialogHeader>
             {isFormOpen && (
               <SubjectForm
