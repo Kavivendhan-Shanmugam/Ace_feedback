@@ -3,15 +3,16 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Input } => '@/components/ui/input';
 import { Loader2, Upload, Download, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError, showSuccess } from '@/utils/toast';
 import * as z from 'zod';
 import { ZodError } from 'zod';
-import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import * as XLSX from 'xlsx'; // Import xlsx library
 
-// Define the schema for a single row in the CSV
+// Define the schema for a single row in the XLSX
 const timetableRowSchema = z.object({
   day_of_week: z.coerce.number().min(1, "Day of week must be 1-7").max(7, "Day of week must be 1-7"),
   subject_name: z.string().min(1, "Subject name is required"),
@@ -34,17 +35,16 @@ const TimetableBulkUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownloadTemplate = () => {
-    const csvContent = "day_of_week,subject_name,period,batch_name,semester_number,start_time,end_time\n" +
-                       "1,Calculus I,,2024-2028,1,09:00,10:00\n" +
-                       "1,Physics II,2,2024-2028,1,10:00,11:00\n" +
-                       "2,Chemistry I,,2025-2029,2,11:00,12:00";
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', 'timetable_template.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const ws_data = [
+      ["day_of_week", "subject_name", "period", "batch_name", "semester_number", "start_time", "end_time"],
+      [1, "Calculus I", null, "2024-2028", 1, "09:00", "10:00"],
+      [1, "Physics II", 2, "2024-2028", 1, "10:00", "11:00"],
+      [2, "Chemistry I", null, "2025-2029", 2, "11:00", "12:00"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Timetable");
+    XLSX.writeFile(wb, "timetable_template.xlsx");
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,28 +58,31 @@ const TimetableBulkUpload: React.FC = () => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const text = e.target?.result as string;
-        const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-        if (rows.length === 0) {
-          throw new Error("The uploaded file is empty.");
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        if (json.length === 0) {
+          throw new Error("The uploaded file is empty or has no data.");
         }
 
-        const headers = rows[0].split(',').map(h => h.trim());
-        const dataRows = rows.slice(1);
+        const headers = (json[0] as string[]).map(h => h.trim());
+        const dataRows = json.slice(1);
 
         if (!headers.includes('day_of_week') || !headers.includes('subject_name') || !headers.includes('batch_name') || !headers.includes('semester_number') || !headers.includes('start_time') || !headers.includes('end_time')) {
-          throw new Error("CSV headers are missing required columns: day_of_week, subject_name, batch_name, semester_number, start_time, end_time.");
+          throw new Error("XLSX headers are missing required columns: day_of_week, subject_name, batch_name, semester_number, start_time, end_time.");
         }
 
         const parsedData: TimetableRow[] = [];
         const parsingErrors: string[] = [];
 
         for (let i = 0; i < dataRows.length; i++) {
-          const row = dataRows[i];
-          const values = row.split(',').map(v => v.trim());
-          const rowObject: { [key: string]: string | number | undefined } = {};
+          const row = dataRows[i] as (string | number | null | undefined)[];
+          const rowObject: { [key: string]: string | number | undefined | null } = {};
           headers.forEach((header, index) => {
-            rowObject[header] = values[index];
+            rowObject[header] = row[index];
           });
 
           try {
@@ -183,24 +186,24 @@ const TimetableBulkUpload: React.FC = () => {
         }
       }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file); // Read as ArrayBuffer for XLSX
   };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Bulk Upload Timetable</CardTitle>
-        <CardDescription>Upload a CSV file to add multiple timetable entries at once.</CardDescription>
+        <CardDescription>Upload an XLSX file to add multiple timetable entries at once.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <Button onClick={handleDownloadTemplate} variant="outline" className="w-full sm:w-auto">
-            <Download className="mr-2 h-4 w-4" /> Download Template (CSV)
+            <Download className="mr-2 h-4 w-4" /> Download Template (XLSX)
           </Button>
           <div className="relative w-full sm:w-auto">
             <Input
               type="file"
-              accept=".csv"
+              accept=".xlsx"
               onChange={handleFileUpload}
               className="hidden"
               ref={fileInputRef}
@@ -218,7 +221,7 @@ const TimetableBulkUpload: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Upload className="mr-2 h-4 w-4" /> Upload CSV
+                  <Upload className="mr-2 h-4 w-4" /> Upload XLSX
                 </>
               )}
             </Button>
@@ -254,7 +257,7 @@ const TimetableBulkUpload: React.FC = () => {
             <FileText className="mr-2 h-4 w-4" /> Template Instructions:
           </h3>
           <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-            <li>Ensure your CSV file has the exact headers: `day_of_week`, `subject_name`, `period`, `batch_name`, `semester_number`, `start_time`, `end_time`.</li>
+            <li>Ensure your XLSX file has the exact headers in the first row: `day_of_week`, `subject_name`, `period`, `batch_name`, `semester_number`, `start_time`, `end_time`.</li>
             <li>`day_of_week`: Use numbers 1-7 (1 for Monday, 7 for Sunday).</li>
             <li>`subject_name`: Must exactly match an existing subject name.</li>
             <li>`period`: Optional. If your subject names are not unique, use this to specify the period (e.g., "Physics I" Period 1 vs "Physics I" Period 2). Leave blank if not applicable.</li>
