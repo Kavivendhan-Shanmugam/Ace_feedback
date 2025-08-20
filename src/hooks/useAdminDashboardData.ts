@@ -26,7 +26,7 @@ export const useAdminDashboardData = () => {
         supabase.from('feedback').select(`
           id, rating, comment, created_at,
           subjects:class_id(name), 
-          profiles:student_id(first_name, last_name, avatar_url)
+          profiles(first_name, last_name, avatar_url)
         `).order('created_at', { ascending: false }).limit(5)
       ]);
 

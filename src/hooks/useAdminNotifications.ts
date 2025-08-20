@@ -25,7 +25,7 @@ export const useAdminNotifications = () => {
         created_at,
         comment,
         subjects:class_id(name),
-        profiles:student_id(first_name, last_name)
+        profiles(first_name, last_name)
       `)
       .is('admin_response', null)
       .order('created_at', { ascending: false });
