@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Calendar, MessageSquare, BarChart2, Layers } from 'lucide-react';
+import { Home, BookOpen, Calendar, MessageSquare, BarChart2, Layers, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { to: '/admin/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/admin/batches', icon: Layers, label: 'Batches' },
+  { to: '/admin/students', icon: Users, label: 'Students' },
   { to: '/admin/subjects', icon: BookOpen, label: 'Subjects' },
   { to: '/admin/timetable', icon: Calendar, label: 'Timetable' },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },

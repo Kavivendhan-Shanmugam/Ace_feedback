@@ -15,6 +15,7 @@ import AdminFeedbackPage from "./pages/admin/Feedback";
 import AdminAnalyticsPage from "./pages/admin/Analytics";
 import StudentFeedbackHistoryPage from "./pages/StudentFeedbackHistoryPage";
 import AdminBatchesPage from "./pages/admin/Batches";
+import AdminStudentsPage from "./pages/admin/Students";
 
 const App = () => (
   <div className="flex flex-col min-h-screen">
@@ -76,6 +77,7 @@ const App = () => (
         <Route path="timetable" element={<AdminTimetablePage />} />
         <Route path="feedback" element={<AdminFeedbackPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
+        <Route path="students" element={<AdminStudentsPage />} />
       </Route>
 
       {/* Catch-all for any other undefined routes */}
