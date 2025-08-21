@@ -12,7 +12,6 @@ import AdminDashboardPage from "./pages/admin/Dashboard";
 import AdminSubjectsPage from "./pages/admin/Subjects";
 import AdminTimetablePage from "./pages/admin/Timetable";
 import AdminFeedbackPage from "./pages/admin/Feedback";
-import AdminUsersPage from "./pages/admin/Users";
 import AdminAnalyticsPage from "./pages/admin/Analytics";
 import StudentFeedbackHistoryPage from "./pages/StudentFeedbackHistoryPage";
 import AdminBatchesPage from "./pages/admin/Batches";
@@ -76,7 +75,6 @@ const App = () => (
         <Route path="subjects" element={<AdminSubjectsPage />} />
         <Route path="timetable" element={<AdminTimetablePage />} />
         <Route path="feedback" element={<AdminFeedbackPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
       </Route>
 
