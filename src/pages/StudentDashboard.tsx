@@ -10,6 +10,7 @@ import { useDailySubjects } from '@/hooks/useDailySubjects'; // Renamed hook
 import { showError, showSuccess } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfile } from '@/hooks/useProfile';
+import StudentName from '@/components/StudentName';
 
 const StudentDashboard = () => {
   const { session, isLoading: isSessionLoading, isAdmin } = useSession();
@@ -84,7 +85,7 @@ const StudentDashboard = () => {
       <div className="w-full max-w-md text-center">
         <h1 className="text-4xl font-bold mb-2 text-gray-800 dark:text-gray-200">Student Dashboard</h1>
         <p className="text-xl text-muted-foreground">
-          Welcome back, {profile?.first_name || session.user.email}!
+          Welcome back, <StudentName profile={profile} loading={profileLoading} />!
         </p>
       </div>
 
