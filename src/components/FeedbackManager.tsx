@@ -4,11 +4,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MessageSquare, Star, Filter, ChevronsUpDown, XCircle, Inbox } from 'lucide-react';
+import { MessageSquare, Star, Filter, ChevronsUpDown, XCircle, Inbox, Calendar as CalendarIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeedbackManager } from '@/hooks/useFeedbackManager';
 import RatingStars from './RatingStars';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,10 @@ import { useBatches } from '@/hooks/useBatches';
 import FeedbackTrends from './admin/FeedbackTrends';
 import FeedbackBreakdown from './admin/FeedbackBreakdown';
 import { Separator } from './ui/separator';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 const FeedbackManager: React.FC = () => {
   const {
@@ -41,7 +44,7 @@ const FeedbackManager: React.FC = () => {
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [batchFilter, setBatchFilter] = useState('all');
   const [semesterFilter, setSemesterFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [date, setDate] = useState<DateRange | undefined>(undefined);
 
   const handleClearFilters = () => {
     setStatusFilter('all');
@@ -49,29 +52,23 @@ const FeedbackManager: React.FC = () => {
     setSubjectFilter('all');
     setBatchFilter('all');
     setSemesterFilter('all');
-    setSearchTerm('');
+    setDate(undefined);
   };
 
   useEffect(() => {
     if (location.state) {
-      const { subjectId, studentName, feedbackId } = location.state;
+      const { subjectId, feedbackId } = location.state;
       
-      // Prioritize direct feedback ID linking
       if (feedbackId && feedbackEntries.length > 0) {
         const feedbackExists = feedbackEntries.some(f => f.id === feedbackId);
         if (feedbackExists) {
-          // Clear filters to ensure the item is visible in the list
           handleClearFilters();
-          // Set the selected ID
           setSelectedFeedbackId(feedbackId);
         }
-      } else {
-        // Handle older filter-based navigation
-        if (subjectId) setSubjectFilter(subjectId);
-        if (studentName) setSearchTerm(studentName);
+      } else if (subjectId) {
+        setSubjectFilter(subjectId);
       }
       
-      // Clear the location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
   }, [location.state, feedbackEntries]);
@@ -82,7 +79,7 @@ const FeedbackManager: React.FC = () => {
     subjectFilter !== 'all',
     batchFilter !== 'all',
     semesterFilter !== 'all',
-    searchTerm !== '',
+    !!date,
   ].filter(Boolean).length;
 
   const availableSubjects = useMemo(() => {
@@ -119,24 +116,26 @@ const FeedbackManager: React.FC = () => {
     if (semesterFilter !== 'all') {
       filtered = filtered.filter(entry => entry.semester_number === parseInt(semesterFilter));
     }
-    if (searchTerm) {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(entry =>
-        entry.comment?.toLowerCase().includes(lowercasedSearchTerm)
-      );
+    if (date?.from) {
+      const fromDate = new Date(date.from);
+      fromDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(entry => new Date(entry.created_at) >= fromDate);
+    }
+    if (date?.to) {
+      const toDate = new Date(date.to);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(entry => new Date(entry.created_at) <= toDate);
     }
     
-    // Default sort by creation date descending
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return filtered;
-  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, searchTerm]);
+  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, date]);
 
   const selectedFeedback = useMemo(() => {
     return feedbackEntries.find(f => f.id === selectedFeedbackId) || null;
   }, [selectedFeedbackId, feedbackEntries]);
 
-  // When filters change, if the selected feedback is no longer in the filtered list, deselect it.
   useEffect(() => {
     if (selectedFeedbackId && !filteredFeedback.find(f => f.id === selectedFeedbackId)) {
       setSelectedFeedbackId(null);
@@ -212,7 +211,7 @@ const FeedbackManager: React.FC = () => {
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="flex items-center text-sm font-semibold">
               <Filter className="h-4 w-4 mr-2" />
-              Filters & Search
+              Filters
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="ml-2">{activeFilterCount}</Badge>
               )}
@@ -229,11 +228,42 @@ const FeedbackManager: React.FC = () => {
         <CollapsibleContent>
           <div className="flex flex-col gap-4 p-4 border-t">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                placeholder="Search by comment..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date?.from ? (
+                      date.to ? (
+                        <>
+                          {format(date.from, "LLL dd, y")} -{" "}
+                          {format(date.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(date.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
+                    selected={date}
+                    onSelect={setDate}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
               <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by Batch..." />
