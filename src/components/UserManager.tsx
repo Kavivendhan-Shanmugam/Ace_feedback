@@ -115,7 +115,7 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
@@ -144,7 +144,7 @@ const UserManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
@@ -156,7 +156,7 @@ const UserManager: React.FC = () => {
               {filteredUsers.map((user: Profile) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    {user.is_admin ? `${user.first_name || 'N/A'} ${user.last_name || 'N/A'}` : 'Student'}
+                    {`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.batches?.name || 'N/A'}</TableCell>
