@@ -11,7 +11,6 @@ const navLinks = [
   { to: '/admin/subjects', icon: BookOpen, label: 'Subjects' },
   { to: '/admin/timetable', icon: Calendar, label: 'Timetable' },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
-  { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/analytics', icon: BarChart2, label: 'Analytics' },
 ];
 
