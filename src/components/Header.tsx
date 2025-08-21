@@ -8,13 +8,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { LogOut, User, LayoutDashboard } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/hooks/useProfile';
 import NotificationBell from './NotificationBell';
@@ -48,9 +51,22 @@ const Header: React.FC = () => {
         </Link>
 
         <nav className="flex items-center space-x-2 sm:space-x-4">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={profile?.avatar_url || undefined} alt="User Avatar" />
+            <AvatarFallback>
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+
           <Button asChild variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 hidden sm:flex">
             <Link to={isAdmin ? "/admin/dashboard" : "/student/dashboard"}>
               <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+            </Link>
+          </Button>
+
+          <Button asChild variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
+            <Link to="/profile">
+              <User className="mr-2 h-4 w-4" /> Profile
             </Link>
           </Button>
 
@@ -58,42 +74,25 @@ const Header: React.FC = () => {
 
           <ThemeToggle />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={profile?.avatar_url || undefined} alt="User Avatar" />
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <LogOut className="mr-2 h-4 w-4" /> Sign Out
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'User'}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {session?.user.email}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link to="/profile">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will be logged out of your account. You can always sign back in later.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </nav>
       </div>
     </header>
