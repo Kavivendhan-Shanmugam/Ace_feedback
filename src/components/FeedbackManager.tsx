@@ -44,6 +44,7 @@ const FeedbackManager: React.FC = () => {
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [batchFilter, setBatchFilter] = useState('all');
   const [semesterFilter, setSemesterFilter] = useState('all');
+  const [periodFilter, setPeriodFilter] = useState('all');
   const [date, setDate] = useState<DateRange | undefined>(undefined);
 
   const handleClearFilters = () => {
@@ -52,6 +53,7 @@ const FeedbackManager: React.FC = () => {
     setSubjectFilter('all');
     setBatchFilter('all');
     setSemesterFilter('all');
+    setPeriodFilter('all');
     setDate(undefined);
   };
 
@@ -79,6 +81,7 @@ const FeedbackManager: React.FC = () => {
     subjectFilter !== 'all',
     batchFilter !== 'all',
     semesterFilter !== 'all',
+    periodFilter !== 'all',
     !!date,
   ].filter(Boolean).length;
 
@@ -116,6 +119,9 @@ const FeedbackManager: React.FC = () => {
     if (semesterFilter !== 'all') {
       filtered = filtered.filter(entry => entry.semester_number === parseInt(semesterFilter));
     }
+    if (periodFilter !== 'all') {
+      filtered = filtered.filter(entry => entry.subjects?.period === parseInt(periodFilter));
+    }
     if (date?.from) {
       const fromDate = new Date(date.from);
       fromDate.setHours(0, 0, 0, 0);
@@ -130,7 +136,7 @@ const FeedbackManager: React.FC = () => {
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return filtered;
-  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, date]);
+  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, periodFilter, date]);
 
   const selectedFeedback = useMemo(() => {
     return feedbackEntries.find(f => f.id === selectedFeedbackId) || null;
@@ -227,7 +233,40 @@ const FeedbackManager: React.FC = () => {
         </div>
         <CollapsibleContent>
           <div className="flex flex-col gap-4 p-4 border-t">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Batch..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {batches.map(batch => (
+                    <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={semesterFilter} onValueChange={setSemesterFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Semester..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Semesters</SelectItem>
+                  {Array.from({ length: 8 }, (_, i) => i + 1).map(sem => (
+                    <SelectItem key={sem} value={sem.toString()}>{`Semester ${sem}`}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Period..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Periods</SelectItem>
+                  {Array.from({ length: 7 }, (_, i) => i + 1).map(p => (
+                    <SelectItem key={p} value={p.toString()}>{`Period ${p}`}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -264,28 +303,6 @@ const FeedbackManager: React.FC = () => {
                   />
                 </PopoverContent>
               </Popover>
-              <Select value={batchFilter} onValueChange={setBatchFilter} disabled={batchesLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by Batch..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
-                  {batches.map(batch => (
-                    <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by Semester..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Semesters</SelectItem>
-                  {Array.from({ length: 8 }, (_, i) => i + 1).map(sem => (
-                    <SelectItem key={sem} value={sem.toString()}>{sem}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={subjectFilter} onValueChange={setSubjectFilter}>
