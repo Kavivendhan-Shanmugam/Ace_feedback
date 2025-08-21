@@ -43,8 +43,8 @@ function Login() {
     <div className="flex items-center justify-center h-full p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to the Feedback Portal</CardTitle>
-          <CardDescription>Sign in or sign up to continue</CardDescription>
+          <CardTitle className="text-2xl">Student Account</CardTitle>
+          <CardDescription>Sign in or create an account to provide feedback</CardDescription>
         </CardHeader>
         <CardContent>
           <Auth
