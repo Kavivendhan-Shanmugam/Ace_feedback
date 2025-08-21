@@ -78,7 +78,7 @@ const UserManager: React.FC = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto mt-8">
       <CardHeader>
-        <CardTitle>Manage Users</CardTitle>
+        <CardTitle>User Management</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4 mb-4">
