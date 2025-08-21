@@ -51,7 +51,7 @@ const FeedbackDetail: React.FC<FeedbackDetailProps> = ({ feedback, onUpdateRespo
         <div>
           <CardTitle>Feedback Details</CardTitle>
           <CardDescription>
-            From {feedback.profiles?.first_name || 'Student'} {feedback.profiles?.last_name || ''} on {new Date(feedback.created_at).toLocaleString()}
+            Submitted on {new Date(feedback.created_at).toLocaleString()}
           </CardDescription>
         </div>
         <ConfirmAlertDialog

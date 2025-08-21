@@ -122,7 +122,7 @@ const FeedbackManager: React.FC = () => {
     if (searchTerm) {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(entry =>
-        `${entry.profiles?.first_name || ''} ${entry.profiles?.last_name || ''}`.toLowerCase().includes(lowercasedSearchTerm)
+        entry.comment?.toLowerCase().includes(lowercasedSearchTerm)
       );
     }
     
@@ -179,7 +179,7 @@ const FeedbackManager: React.FC = () => {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-grow">
-                  <p className="font-semibold">{feedback.subjects.name}</p>
+                  <p className="font-semibold">{feedback.subjects.name} {feedback.subjects.period ? `(P${feedback.subjects.period})` : ''}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(feedback.created_at).toLocaleString()}
                   </p>
@@ -230,7 +230,7 @@ const FeedbackManager: React.FC = () => {
           <div className="flex flex-col gap-4 p-4 border-t">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
-                placeholder="Search by student name..."
+                placeholder="Search by comment..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
