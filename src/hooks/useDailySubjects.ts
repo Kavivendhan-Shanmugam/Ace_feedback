@@ -53,7 +53,7 @@ export const useDailySubjects = () => {
         class_id,
         start_time,
         end_time,
-        subjects(id, name, period)
+        subjects!timetables_class_id_fkey(id, name, period)
       `)
       .eq('day_of_week', supabaseDayOfWeek)
       .eq('batch_id', studentBatchId)
