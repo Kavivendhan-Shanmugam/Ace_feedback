@@ -45,7 +45,7 @@ export const useWeeklyTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects!timetables_class_id_fkey(id, name, period)
+        subjects:class_id(id, name, period)
       `)
       .eq('batch_id', studentBatchId)
       .eq('semester_number', studentSemesterNumber)

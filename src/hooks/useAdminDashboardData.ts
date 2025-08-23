@@ -25,8 +25,8 @@ export const useAdminDashboardData = () => {
         supabase.rpc('get_subject_feedback_stats'),
         supabase.from('feedback').select(`
           id, rating, comment, created_at,
-          subjects!feedback_class_id_fkey(name), 
-          profiles!feedback_student_id_fkey(first_name, last_name, avatar_url)
+          subjects:class_id(name), 
+          profiles:student_id(first_name, last_name, avatar_url)
         `).order('created_at', { ascending: false }).limit(5)
       ]);
 
