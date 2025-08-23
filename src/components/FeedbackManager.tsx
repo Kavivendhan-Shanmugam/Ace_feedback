@@ -41,7 +41,6 @@ const FeedbackManager: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState<string[]>([]);
-  const [subjectFilter, setSubjectFilter] = useState('all');
   const [batchFilter, setBatchFilter] = useState('all');
   const [semesterFilter, setSemesterFilter] = useState('all');
   const [periodFilter, setPeriodFilter] = useState('all');
@@ -50,7 +49,6 @@ const FeedbackManager: React.FC = () => {
   const handleClearFilters = () => {
     setStatusFilter('all');
     setRatingFilter([]);
-    setSubjectFilter('all');
     setBatchFilter('all');
     setSemesterFilter('all');
     setPeriodFilter('all');
@@ -59,7 +57,7 @@ const FeedbackManager: React.FC = () => {
 
   useEffect(() => {
     if (location.state) {
-      const { subjectId, feedbackId } = location.state;
+      const { feedbackId } = location.state;
       
       if (feedbackId && feedbackEntries.length > 0) {
         const feedbackExists = feedbackEntries.some(f => f.id === feedbackId);
@@ -67,8 +65,6 @@ const FeedbackManager: React.FC = () => {
           handleClearFilters();
           setSelectedFeedbackId(feedbackId);
         }
-      } else if (subjectId) {
-        setSubjectFilter(subjectId);
       }
       
       window.history.replaceState({}, document.title);
@@ -78,28 +74,11 @@ const FeedbackManager: React.FC = () => {
   const activeFilterCount = [
     statusFilter !== 'all',
     ratingFilter.length > 0,
-    subjectFilter !== 'all',
     batchFilter !== 'all',
     semesterFilter !== 'all',
     periodFilter !== 'all',
     !!date,
   ].filter(Boolean).length;
-
-  const availableSubjects = useMemo(() => {
-    if (!feedbackEntries) return [];
-    const uniqueSubjects = new Map<string, { name: string; period: number | null; batchName: string | undefined; semesterNumber: number | null }>();
-    feedbackEntries.forEach(entry => {
-      if (entry.subjects && !uniqueSubjects.has(entry.class_id)) {
-        uniqueSubjects.set(entry.class_id, {
-          name: entry.subjects.name,
-          period: entry.subjects.period,
-          batchName: entry.batches?.name,
-          semesterNumber: entry.semester_number,
-        });
-      }
-    });
-    return Array.from(uniqueSubjects.entries()).map(([id, data]) => ({ id, ...data })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [feedbackEntries]);
 
   const filteredFeedback = useMemo(() => {
     let filtered = [...feedbackEntries];
@@ -109,9 +88,6 @@ const FeedbackManager: React.FC = () => {
     }
     if (ratingFilter.length > 0) {
       filtered = filtered.filter(entry => ratingFilter.includes(entry.rating.toString()));
-    }
-    if (subjectFilter !== 'all') {
-      filtered = filtered.filter(entry => entry.class_id === subjectFilter);
     }
     if (batchFilter !== 'all') {
       filtered = filtered.filter(entry => entry.batch_id === batchFilter);
@@ -136,7 +112,7 @@ const FeedbackManager: React.FC = () => {
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return filtered;
-  }, [feedbackEntries, statusFilter, ratingFilter, subjectFilter, batchFilter, semesterFilter, periodFilter, date]);
+  }, [feedbackEntries, statusFilter, ratingFilter, batchFilter, semesterFilter, periodFilter, date]);
 
   const selectedFeedback = useMemo(() => {
     return feedbackEntries.find(f => f.id === selectedFeedbackId) || null;
@@ -184,7 +160,9 @@ const FeedbackManager: React.FC = () => {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-grow">
-                  <p className="font-semibold">{feedback.subjects.name} {feedback.subjects.period ? `(P${feedback.subjects.period})` : ''}</p>
+                  <p className="font-semibold">
+                    {feedback.profiles?.first_name || 'Student'} {feedback.profiles?.last_name}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(feedback.created_at).toLocaleString()}
                   </p>
@@ -305,17 +283,6 @@ const FeedbackManager: React.FC = () => {
               </Popover>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by subject..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Subjects</SelectItem>
-                  {availableSubjects.map(sub => (
-                    <SelectItem key={sub.id} value={sub.id}>{sub.name} {sub.period ? `(P${sub.period})` : ''}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-muted-foreground">Status:</span>
                 <ToggleGroup type="single" value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
