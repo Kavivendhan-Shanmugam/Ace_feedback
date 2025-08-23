@@ -49,7 +49,7 @@ const FeedbackDetail: React.FC<FeedbackDetailProps> = ({ feedback, onUpdateRespo
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
-          <CardTitle>Feedback Details</CardTitle>
+          <CardTitle>Feedback for {feedback.subjects?.name}</CardTitle>
           <CardDescription>
             Submitted on {new Date(feedback.created_at).toLocaleString()}
           </CardDescription>
