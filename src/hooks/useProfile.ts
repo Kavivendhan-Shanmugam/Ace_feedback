@@ -22,7 +22,7 @@ export const useProfile = () => {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, is_admin, updated_at, batch_id, semester_number, batches!batch_id(name)')
+      .select('id, first_name, last_name, avatar_url, is_admin, updated_at, batch_id, semester_number, batches(name)')
       .eq('id', session.user.id)
       .single();
 
@@ -63,7 +63,7 @@ export const useProfile = () => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', session.user.id)
-      .select('id, first_name, last_name, avatar_url, is_admin, updated_at, batch_id, semester_number, batches!batch_id(name)')
+      .select('id, first_name, last_name, avatar_url, is_admin, updated_at, batch_id, semester_number, batches(name)')
       .single();
 
     if (error) {

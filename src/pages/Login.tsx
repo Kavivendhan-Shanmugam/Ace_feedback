@@ -55,26 +55,23 @@ function Login() {
             }}
             redirectTo={window.location.origin} // Redirect to root after auth, SessionContextProvider handles further redirect
             view="sign_up"
-            fields={{
-              sign_up: {
-                additionalFields: [
-                  {
-                    type: 'text',
-                    name: 'first_name',
-                    label: 'First Name',
-                    placeholder: 'Your first name',
-                    required: true,
-                  },
-                  {
-                    type: 'text',
-                    name: 'last_name',
-                    label: 'Last Name',
-                    placeholder: 'Your last name',
-                    required: true,
-                  },
-                ],
+            // The 'fields' prop is used to customize the input fields for different views.
+            // 'additionalFields' is a property within the 'signUp' object.
+            // The 'form' prop itself is not directly supported as a top-level prop.
+            additionalFields={[
+              {
+                name: 'first_name',
+                label: 'First Name',
+                placeholder: 'Your first name',
+                required: true,
               },
-            }}
+              {
+                name: 'last_name',
+                label: 'Last Name',
+                placeholder: 'Your last name',
+                required: true,
+              },
+            ]}
           />
         </CardContent>
       </Card>
