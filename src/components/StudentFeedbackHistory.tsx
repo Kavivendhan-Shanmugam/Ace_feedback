@@ -48,7 +48,7 @@ const StudentFeedbackHistory: React.FC = () => {
           .from('feedback')
           .select(`
             id, rating, comment, admin_response, created_at, is_response_seen_by_student,
-            subjects:class_id (name)
+            subjects(name)
           `)
           .eq('id', feedbackIdToOpen)
           .single();

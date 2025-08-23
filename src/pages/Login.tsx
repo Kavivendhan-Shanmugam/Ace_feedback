@@ -54,15 +54,25 @@ function Login() {
               theme: customAuthTheme, // Use the custom theme
             }}
             redirectTo={window.location.origin} // Redirect to root after auth, SessionContextProvider handles further redirect
-            // Explicitly tell Auth component to collect first_name and last_name
-            form={{
-              signUp: {
-                email: true,
-                password: true,
-                data: {
-                  first_name: true,
-                  last_name: true,
-                },
+            view="sign_up"
+            fields={{
+              sign_up: {
+                additionalFields: [
+                  {
+                    type: 'text',
+                    name: 'first_name',
+                    label: 'First Name',
+                    placeholder: 'Your first name',
+                    required: true,
+                  },
+                  {
+                    type: 'text',
+                    name: 'last_name',
+                    label: 'Last Name',
+                    placeholder: 'Your last name',
+                    required: true,
+                  },
+                ],
               },
             }}
           />
