@@ -17,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import FeedbackDetail from './admin/FeedbackDetail';
 import { useBatches } from '@/hooks/useBatches';
+import { useSubjects } from '@/hooks/useSubjects'; // Import useSubjects
 import FeedbackTrends from './admin/FeedbackTrends';
 import FeedbackBreakdown from './admin/FeedbackBreakdown';
 import { Separator } from './ui/separator';
@@ -34,6 +35,7 @@ const FeedbackManager: React.FC = () => {
     deleteFeedback,
   } = useFeedbackManager();
   const { batches, loading: batchesLoading } = useBatches();
+  const { subjects, loading: subjectsLoading } = useSubjects(); // Use useSubjects hook
   const location = useLocation();
   
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
@@ -43,6 +45,7 @@ const FeedbackManager: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState<string[]>([]);
   const [batchFilter, setBatchFilter] = useState('all');
   const [semesterFilter, setSemesterFilter] = useState('all');
+  const [subjectFilter, setSubjectFilter] = useState('all'); // New subject filter state
   const [periodFilter, setPeriodFilter] = useState('all');
   const [date, setDate] = useState<DateRange | undefined>(undefined);
 
@@ -51,6 +54,7 @@ const FeedbackManager: React.FC = () => {
     setRatingFilter([]);
     setBatchFilter('all');
     setSemesterFilter('all');
+    setSubjectFilter('all'); // Reset new subject filter
     setPeriodFilter('all');
     setDate(undefined);
   };
@@ -76,6 +80,7 @@ const FeedbackManager: React.FC = () => {
     ratingFilter.length > 0,
     batchFilter !== 'all',
     semesterFilter !== 'all',
+    subjectFilter !== 'all', // Include new subject filter
     periodFilter !== 'all',
     !!date,
   ].filter(Boolean).length;
@@ -95,6 +100,9 @@ const FeedbackManager: React.FC = () => {
     if (semesterFilter !== 'all') {
       filtered = filtered.filter(entry => entry.semester_number === parseInt(semesterFilter));
     }
+    if (subjectFilter !== 'all') { // Apply new subject filter
+      filtered = filtered.filter(entry => entry.class_id === subjectFilter);
+    }
     if (periodFilter !== 'all') {
       filtered = filtered.filter(entry => entry.subjects?.period === parseInt(periodFilter));
     }
@@ -112,7 +120,7 @@ const FeedbackManager: React.FC = () => {
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return filtered;
-  }, [feedbackEntries, statusFilter, ratingFilter, batchFilter, semesterFilter, periodFilter, date]);
+  }, [feedbackEntries, statusFilter, ratingFilter, batchFilter, semesterFilter, subjectFilter, periodFilter, date]);
 
   const selectedFeedback = useMemo(() => {
     return feedbackEntries.find(f => f.id === selectedFeedbackId) || null;
@@ -231,6 +239,17 @@ const FeedbackManager: React.FC = () => {
                   <SelectItem value="all">All Semesters</SelectItem>
                   {Array.from({ length: 8 }, (_, i) => i + 1).map(sem => (
                     <SelectItem key={sem} value={sem.toString()}>{`Semester ${sem}`}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={subjectFilter} onValueChange={setSubjectFilter} disabled={subjectsLoading}> {/* New Subject Filter */}
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Subject..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subjects</SelectItem>
+                  {subjects.map(subject => (
+                    <SelectItem key={subject.id} value={subject.id}>{subject.name} {subject.period ? `(P${subject.period})` : ''}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
