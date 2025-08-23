@@ -25,9 +25,9 @@ export const useFeedbackManager = () => {
         batch_id,
         semester_number,
         student_id,
-        subjects(name, period),
-        profiles(first_name, last_name),
-        batches(name)
+        subjects!class_id(name, period),
+        profiles!student_id(first_name, last_name),
+        batches!batch_id(name)
       `)
       .order('created_at', { ascending: false });
 

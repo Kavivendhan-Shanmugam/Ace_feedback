@@ -22,10 +22,17 @@ export const useAdminNotifications = () => {
       .from('feedback')
       .select(`
         id,
-        created_at,
+        student_id,
+        class_id,
+        batch_id,
+        semester_number,
+        rating,
         comment,
-        subjects(name),
-        profiles(first_name, last_name)
+        admin_response,
+        created_at,
+        is_response_seen_by_student,
+        subjects!class_id(name),
+        profiles!student_id(first_name, last_name)
       `)
       .is('admin_response', null)
       .order('created_at', { ascending: false });

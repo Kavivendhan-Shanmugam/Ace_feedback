@@ -36,8 +36,8 @@ export const useTimetable = () => {
         start_time,
         end_time,
         created_at,
-        subjects(id, name, period),
-        batches(name)
+        subjects!class_id(id, name, period),
+        batches!batch_id(name)
       `)
       .order('day_of_week', { ascending: true })
       .order('start_time', { ascending: true });
@@ -95,8 +95,8 @@ export const useTimetable = () => {
         start_time,
         end_time,
         created_at,
-        subjects(id, name, period),
-        batches(name)
+        subjects!class_id(id, name, period),
+        batches!batch_id(name)
       `)
       .single();
 
@@ -155,8 +155,8 @@ export const useTimetable = () => {
         start_time,
         end_time,
         created_at,
-        subjects(id, name, period),
-        batches(name)
+        subjects!class_id(id, name, period),
+        batches!batch_id(name)
       `)
       .single();
 

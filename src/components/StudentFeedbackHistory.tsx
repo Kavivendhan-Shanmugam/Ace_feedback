@@ -47,8 +47,8 @@ const StudentFeedbackHistory: React.FC = () => {
         const { data, error } = await supabase
           .from('feedback')
           .select(`
-            id, rating, comment, admin_response, created_at, is_response_seen_by_student,
-            subjects(name)
+            id, student_id, class_id, batch_id, semester_number, rating, comment, admin_response, created_at, is_response_seen_by_student,
+            subjects!class_id(name)
           `)
           .eq('id', feedbackIdToOpen)
           .single();

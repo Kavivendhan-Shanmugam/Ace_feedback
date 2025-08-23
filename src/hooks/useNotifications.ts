@@ -17,10 +17,16 @@ export const useNotifications = () => {
       .from('feedback')
       .select(`
         id,
+        student_id,
+        class_id,
+        batch_id,
+        semester_number,
+        rating,
+        comment,
         admin_response,
         created_at,
         is_response_seen_by_student,
-        subjects(name)
+        subjects!class_id(name)
       `)
       .eq('student_id', userId)
       .eq('is_response_seen_by_student', false)

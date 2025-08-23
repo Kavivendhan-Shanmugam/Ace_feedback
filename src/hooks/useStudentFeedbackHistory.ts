@@ -21,12 +21,16 @@ export const useStudentFeedbackHistory = (page: number, pageSize: number) => {
       .from('feedback')
       .select(`
         id,
+        student_id,
+        class_id,
+        batch_id,
+        semester_number,
         rating,
         comment,
         admin_response,
         created_at,
         is_response_seen_by_student,
-        subjects(name, period)
+        subjects!class_id(name, period)
       `, { count: 'exact' })
       .eq('student_id', userId)
       .order('created_at', { ascending: false })

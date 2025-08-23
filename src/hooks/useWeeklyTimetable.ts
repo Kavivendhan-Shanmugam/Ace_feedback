@@ -46,7 +46,7 @@ export const useWeeklyTimetable = () => {
         start_time,
         end_time,
         created_at,
-        subjects(id, name, period)
+        subjects!class_id(id, name, period)
       `)
       .eq('batch_id', studentBatchId)
       .eq('semester_number', studentSemesterNumber)

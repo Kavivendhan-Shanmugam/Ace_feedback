@@ -58,7 +58,7 @@ const TimetableBulkUpload: React.FC<TimetableBulkUploadProps> = ({ onUploadSucce
       { value: 6, label: 'Saturday' },
     ];
 
-    const ws_data: (string | number)[][] = [
+    const ws_data: (string | number | null | undefined)[][] = [ // Explicitly define type to allow null/undefined for period
       ["day_of_week", "subject_name", "period", "batch_name", "semester_number", "start_time", "end_time"],
     ];
 
