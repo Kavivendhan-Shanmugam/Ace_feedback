@@ -24,9 +24,10 @@ export const useFeedbackManager = () => {
         class_id,
         batch_id,
         semester_number,
-        subjects(name, period),
-        profiles(first_name, last_name),
-        batches(name)
+        student_id,
+        subjects:class_id(name, period),
+        profiles:student_id(first_name, last_name),
+        batches:batch_id(name)
       `)
       .order('created_at', { ascending: false });
 
@@ -34,7 +35,7 @@ export const useFeedbackManager = () => {
       console.error("Error fetching feedback:", error);
       showError("Failed to load feedback entries.");
     } else {
-      setFeedbackEntries(data || []);
+      setFeedbackEntries(data as Feedback[] || []);
     }
     setLoading(false);
   }, []);

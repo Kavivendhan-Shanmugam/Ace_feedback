@@ -35,8 +35,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const FeedbackBreakdown: React.FC = () => {
-  const { feedbackStats, loading } = useFeedbackAnalytics();
+interface FeedbackBreakdownProps {
+  batchId?: string;
+  semesterNumber?: number;
+}
+
+const FeedbackBreakdown: React.FC<FeedbackBreakdownProps> = ({ batchId, semesterNumber }) => {
+  const { feedbackStats, loading } = useFeedbackAnalytics(batchId, semesterNumber);
 
   const distributionChartData = feedbackStats.map(stat => ({
     name: stat.subject_name, // Renamed property

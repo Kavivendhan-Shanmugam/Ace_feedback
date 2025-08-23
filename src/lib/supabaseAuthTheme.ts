@@ -1,4 +1,4 @@
-import { Theme } from '@supabase/auth-ui-react';
+import { Theme } from '@supabase/auth-ui-shared';
 
 export const customAuthTheme: Theme = {
   default: {

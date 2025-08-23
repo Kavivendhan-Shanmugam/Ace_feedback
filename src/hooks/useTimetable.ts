@@ -35,8 +35,9 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects(id, name, period),
-        batches(name)
+        created_at,
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .order('day_of_week', { ascending: true })
       .order('start_time', { ascending: true });
@@ -46,7 +47,7 @@ export const useTimetable = () => {
       showError("Failed to load timetable entries.");
     } else {
       // Explicitly filter out entries where 'subjects' is null
-      setTimetableEntries((timetableData || []).filter(entry => entry.subjects !== null));
+      setTimetableEntries((timetableData || []).filter(entry => entry.subjects !== null) as TimetableEntry[]);
     }
     setLoading(false);
   }, []);
@@ -93,8 +94,9 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects(id, name, period),
-        batches(name)
+        created_at,
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .single();
 
@@ -105,7 +107,7 @@ export const useTimetable = () => {
       return null;
     } else {
       showSuccess("Timetable entry added successfully!");
-      setTimetableEntries(prevEntries => [...prevEntries, data]);
+      setTimetableEntries(prevEntries => [...prevEntries, data as TimetableEntry]);
       fetchData(); // Refetch to ensure sorted order
       setIsSubmitting(false);
       return data;
@@ -152,8 +154,9 @@ export const useTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects(id, name, period),
-        batches(name)
+        created_at,
+        subjects:class_id(id, name, period),
+        batches:batch_id(name)
       `)
       .single();
 

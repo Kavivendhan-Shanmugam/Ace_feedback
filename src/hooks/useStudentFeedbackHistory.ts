@@ -26,7 +26,7 @@ export const useStudentFeedbackHistory = (page: number, pageSize: number) => {
         admin_response,
         created_at,
         is_response_seen_by_student,
-        subjects(name, period)
+        subjects:class_id(name, period)
       `, { count: 'exact' })
       .eq('student_id', userId)
       .order('created_at', { ascending: false })
@@ -38,7 +38,7 @@ export const useStudentFeedbackHistory = (page: number, pageSize: number) => {
       setFeedbackHistory([]);
       setTotalCount(0);
     } else {
-      setFeedbackHistory(data || []);
+      setFeedbackHistory(data as FeedbackHistoryEntry[] || []);
       setTotalCount(count || 0);
     }
     setLoading(false);

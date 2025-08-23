@@ -7,9 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFeedbackTrends } from '@/hooks/useFeedbackTrends';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-const FeedbackTrends: React.FC = () => {
+interface FeedbackTrendsProps {
+  batchId?: string;
+  semesterNumber?: number;
+}
+
+const FeedbackTrends: React.FC<FeedbackTrendsProps> = ({ batchId, semesterNumber }) => {
   const [timeframe, setTimeframe] = useState(30);
-  const { trendData, loading } = useFeedbackTrends(timeframe);
+  const { trendData, loading } = useFeedbackTrends(timeframe, batchId, semesterNumber);
 
   const handleTimeframeChange = (value: string) => {
     if (value) {

@@ -45,7 +45,8 @@ export const useWeeklyTimetable = () => {
         semester_number,
         start_time,
         end_time,
-        subjects(id, name, period)
+        created_at,
+        subjects:class_id(id, name, period)
       `)
       .eq('batch_id', studentBatchId)
       .eq('semester_number', studentSemesterNumber)
@@ -57,7 +58,7 @@ export const useWeeklyTimetable = () => {
       showError("Failed to load weekly timetable.");
     } else {
       // Explicitly filter out entries where 'subjects' is null
-      setTimetableEntries((data || []).filter(entry => entry.subjects !== null));
+      setTimetableEntries((data || []).filter(entry => entry.subjects !== null) as TimetableEntry[]);
     }
     setLoading(false);
   }, [session?.user.id, profile?.batch_id, profile?.semester_number]);

@@ -31,7 +31,7 @@ export const useNotifications = () => {
       console.error("Error fetching notifications:", error);
       showError("Failed to load notifications.");
     } else {
-      setNotifications(data || []);
+      setNotifications(data as Feedback[] || []);
     }
     setLoading(false);
   }, []);

@@ -58,7 +58,7 @@ const TimetableBulkUpload: React.FC<TimetableBulkUploadProps> = ({ onUploadSucce
       { value: 6, label: 'Saturday' },
     ];
 
-    const ws_data = [
+    const ws_data: (string | number)[][] = [
       ["day_of_week", "subject_name", "period", "batch_name", "semester_number", "start_time", "end_time"],
     ];
 

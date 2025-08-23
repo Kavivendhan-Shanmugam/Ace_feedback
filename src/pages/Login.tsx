@@ -54,16 +54,6 @@ function Login() {
               theme: customAuthTheme, // Use the custom theme
             }}
             redirectTo={window.location.origin} // Redirect to root after auth, SessionContextProvider handles further redirect
-            localization={{
-              variables: {
-                sign_up: {
-                  additional_data: {
-                    first_name: 'First Name',
-                    last_name: 'Last Name',
-                  },
-                },
-              },
-            }}
             // Explicitly tell Auth component to collect first_name and last_name
             form={{
               signUp: {
