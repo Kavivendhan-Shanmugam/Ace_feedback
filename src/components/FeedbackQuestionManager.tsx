@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBatches } from '@/hooks/useBatches';
 import FeedbackQuestionForm from './FeedbackQuestionForm';
+import { Badge } from '@/components/ui/badge';
 
 const FeedbackQuestionManager: React.FC = () => {
   const { feedbackQuestions, loading, isSubmitting, addFeedbackQuestion, updateFeedbackQuestion, deleteFeedbackQuestion } = useFeedbackQuestions();
@@ -95,11 +96,7 @@ const FeedbackQuestionManager: React.FC = () => {
             </DialogHeader>
             {isFormOpen && (
               <FeedbackQuestionForm
-                initialData={editingQuestion ? {
-                  question_text: editingQuestion.question_text,
-                  batch_id: editingQuestion.batch_id || "",
-                  semester_number: editingQuestion.semester_number || undefined,
-                } : undefined}
+                initialData={editingQuestion || undefined}
                 onSubmit={editingQuestion ? handleUpdateQuestion : handleAddQuestion}
                 onCancel={closeForm}
                 isSubmitting={isSubmitting}
@@ -145,6 +142,7 @@ const FeedbackQuestionManager: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Question</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -154,6 +152,7 @@ const FeedbackQuestionManager: React.FC = () => {
               {Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-6 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-16" /></TableCell>
                   <TableCell className="text-right">
@@ -175,6 +174,7 @@ const FeedbackQuestionManager: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Question</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Semester</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -184,6 +184,11 @@ const FeedbackQuestionManager: React.FC = () => {
               {filteredQuestions.map((question: FeedbackQuestion) => (
                 <TableRow key={question.id}>
                   <TableCell className="max-w-[200px] truncate">{question.question_text}</TableCell>
+                  <TableCell>
+                    <Badge variant={question.question_type === 'multiple_choice' ? 'default' : 'secondary'}>
+                      {question.question_type === 'multiple_choice' ? 'MCQ' : 'Text'}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{question.batches?.name || 'N/A'}</TableCell>
                   <TableCell>{question.semester_number || 'N/A'}</TableCell>
                   <TableCell className="text-right">

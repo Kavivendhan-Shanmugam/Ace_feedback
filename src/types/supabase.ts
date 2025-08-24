@@ -81,6 +81,8 @@ export interface Feedback {
 export interface FeedbackQuestion {
   id: string;
   question_text: string;
+  question_type: 'text' | 'multiple_choice';
+  options: string[] | null;
   batch_id: string | null;
   semester_number: number | null;
   created_at: string;
