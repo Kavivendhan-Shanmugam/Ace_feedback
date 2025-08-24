@@ -61,6 +61,11 @@ export interface Feedback {
   admin_response: string | null;
   created_at: string;
   is_response_seen_by_student?: boolean;
+  additional_feedback?: {
+    question_id: string;
+    question_text: string;
+    answer: string | string[];
+  }[];
   subjects: {
     name: string;
     period?: number | null;

@@ -36,7 +36,6 @@ const FeedbackDetail: React.FC<FeedbackDetailProps> = ({ feedback, onUpdateRespo
     },
   });
 
-  // Reset form when feedback selection changes
   React.useEffect(() => {
     form.reset({ admin_response: feedback.admin_response || "" });
   }, [feedback, form]);
@@ -77,6 +76,22 @@ const FeedbackDetail: React.FC<FeedbackDetailProps> = ({ feedback, onUpdateRespo
               {feedback.comment || "No comment provided."}
             </p>
           </div>
+          {feedback.additional_feedback && feedback.additional_feedback.length > 0 && (
+            <>
+              <Separator className="my-4" />
+              <div className="space-y-3">
+                <h4 className="font-medium">Additional Questions</h4>
+                {feedback.additional_feedback.map((item, index) => (
+                  <div key={index}>
+                    <p className="text-sm font-semibold">{item.question_text}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap p-2 bg-muted/20 rounded-md mt-1">
+                      {Array.isArray(item.answer) ? item.answer.join(', ') : item.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         
         <div>
