@@ -16,6 +16,7 @@ import AdminAnalyticsPage from "./pages/admin/Analytics";
 import StudentFeedbackHistoryPage from "./pages/StudentFeedbackHistoryPage";
 import AdminBatchesPage from "./pages/admin/Batches";
 import AdminStudentsPage from "./pages/admin/Students";
+import AdminFeedbackQuestionsPage from "./pages/admin/FeedbackQuestions"; // New import
 
 const App = () => (
   <div className="flex flex-col min-h-screen">
@@ -73,11 +74,12 @@ const App = () => (
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="batches" element={<AdminBatchesPage />} />
+        <Route path="students" element={<AdminStudentsPage />} />
         <Route path="subjects" element={<AdminSubjectsPage />} />
         <Route path="timetable" element={<AdminTimetablePage />} />
         <Route path="feedback" element={<AdminFeedbackPage />} />
+        <Route path="feedback-questions" element={<AdminFeedbackQuestionsPage />} /> {/* New route */}
         <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route path="students" element={<AdminStudentsPage />} />
       </Route>
 
       {/* Catch-all for any other undefined routes */}

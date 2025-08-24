@@ -77,6 +77,18 @@ export interface Feedback {
   };
 }
 
+// New interface for Feedback Questions
+export interface FeedbackQuestion {
+  id: string;
+  question_text: string;
+  batch_id: string | null;
+  semester_number: number | null;
+  created_at: string;
+  batches?: {
+    name: string;
+  };
+}
+
 // Specific types for hooks/components that might need slightly different structures
 export interface DailySubject { // Renamed from DailyClass
   id: string;
