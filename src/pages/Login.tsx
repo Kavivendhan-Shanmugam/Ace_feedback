@@ -44,34 +44,18 @@ function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Student Account</CardTitle>
-          <CardDescription>Sign in or create an account to provide feedback</CardDescription>
+          <CardDescription>Sign in to your account to provide feedback</CardDescription>
         </CardHeader>
         <CardContent>
           <Auth
             supabaseClient={supabase}
-            providers={[]} // No third-party providers unless specified
+            providers={[]} // No third-party providers
             appearance={{
-              theme: customAuthTheme, // Use the custom theme
+              theme: customAuthTheme,
             }}
-            redirectTo={window.location.origin} // Redirect to root after auth, SessionContextProvider handles further redirect
-            view="sign_up"
-            // The 'fields' prop is used to customize the input fields for different views.
-            // 'additionalFields' is a property within the 'signUp' object.
-            // The 'form' prop itself is not directly supported as a top-level prop.
-            additionalFields={[
-              {
-                name: 'first_name',
-                label: 'First Name',
-                placeholder: 'Your first name',
-                required: true,
-              },
-              {
-                name: 'last_name',
-                label: 'Last Name',
-                placeholder: 'Your last name',
-                required: true,
-              },
-            ]}
+            redirectTo={window.location.origin}
+            view="sign_in"
+            showLinks={false} // This hides the "Don't have an account? Sign up" link
           />
         </CardContent>
       </Card>
