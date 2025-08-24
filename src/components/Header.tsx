@@ -58,11 +58,13 @@ const Header: React.FC = () => {
             </AvatarFallback>
           </Avatar>
 
-          <Button asChild variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 hidden sm:flex">
-            <Link to={isAdmin ? "/admin/dashboard" : "/student/dashboard"}>
-              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-            </Link>
-          </Button>
+          {isAdmin && (
+            <Button asChild variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 hidden sm:flex">
+              <Link to="/admin/dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+              </Link>
+            </Button>
+          )}
 
           <Button asChild variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
             <Link to="/profile">
