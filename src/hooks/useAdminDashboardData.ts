@@ -1,10 +1,33 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError } from '@/utils/toast';
-import { Feedback, SubjectPerformanceSummary, SubjectFeedbackStats } from '@/types/supabase';
 import { useSession } from '@/components/SessionContextProvider';
+
+// Define types for the data we expect
+interface Feedback {
+  id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  student_id: string;
+  class_id: string;
+  batch_id: string;
+  semester_number: number;
+  admin_response: string | null;
+  subject_name: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
+
+interface SubjectPerformanceSummary {
+  subject_id: string;
+  subject_name: string;
+  average_rating: number;
+  feedback_count: number;
+}
 
 export const useAdminDashboardData = () => {
   const { isAdmin, isLoading: isSessionLoading } = useSession();
@@ -22,35 +45,30 @@ export const useAdminDashboardData = () => {
     setLoading(true);
     try {
       const [subjectStatsRes, recentFeedbackRes] = await Promise.all([
-        supabase.rpc('get_subject_feedback_stats'),
-        supabase.from('feedback').select(`
-          id, rating, comment, created_at, student_id, class_id, batch_id, semester_number, admin_response,
-          subjects(name), 
-          profiles(first_name, last_name, avatar_url)
-        `).order('created_at', { ascending: false }).limit(5)
+        apiClient.getSubjectStats(),
+        apiClient.getRecentFeedback()
       ]);
 
       if (subjectStatsRes.error || recentFeedbackRes.error) {
         console.error("Error fetching dashboard data:", subjectStatsRes.error || recentFeedbackRes.error);
-        if (subjectStatsRes.error?.code !== '42501' && recentFeedbackRes.error?.code !== '42501') {
-          showError("Failed to load dashboard data.");
-        }
+        showError("Failed to load dashboard data.");
         setRecentFeedback([]);
         setSubjectPerformance([]);
       } else {
-        const subjectStats: SubjectFeedbackStats[] = subjectStatsRes.data || [];
-        const performanceSummary: SubjectPerformanceSummary[] = subjectStats.map(stat => ({
+        const subjectStats = subjectStatsRes.data || [];
+        const performanceSummary: SubjectPerformanceSummary[] = subjectStats.map((stat: any) => ({
           subject_id: stat.subject_id,
           subject_name: stat.subject_name,
-          average_rating: stat.average_rating,
-          feedback_count: Number(stat.feedback_count) // Convert bigint to number
+          average_rating: Number(stat.average_rating),
+          feedback_count: Number(stat.feedback_count)
         }));
         setSubjectPerformance(performanceSummary);
-        setRecentFeedback(recentFeedbackRes.data as Feedback[] || []);
+        setRecentFeedback(recentFeedbackRes.data || []);
       }
 
     } catch (error: any) {
-      showError(error.message);
+      console.error('Dashboard data error:', error);
+      showError(error.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -59,19 +77,6 @@ export const useAdminDashboardData = () => {
   useEffect(() => {
     if (!isSessionLoading) {
       fetchData();
-
-      const channel = supabase
-        .channel('admin-dashboard-feedback-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'feedback' },
-          () => fetchData()
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
   }, [fetchData, isSessionLoading]);
 

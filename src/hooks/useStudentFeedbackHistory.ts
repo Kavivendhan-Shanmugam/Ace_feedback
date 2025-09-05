@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { useSession } from '@/components/SessionContextProvider';
 import { showError } from '@/utils/toast';
 import { FeedbackHistoryEntry } from '@/types/supabase';
@@ -14,36 +14,23 @@ export const useStudentFeedbackHistory = (page: number, pageSize: number) => {
 
   const fetchFeedbackHistory = useCallback(async (userId: string) => {
     setLoading(true);
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+    
+    const result = await apiClient.getFeedback();
 
-    const { data, error, count } = await supabase
-      .from('feedback')
-      .select(`
-        id,
-        student_id,
-        class_id,
-        batch_id,
-        semester_number,
-        rating,
-        comment,
-        admin_response,
-        created_at,
-        is_response_seen_by_student,
-        subjects(name, period)
-      `, { count: 'exact' })
-      .eq('student_id', userId)
-      .order('created_at', { ascending: false })
-      .range(from, to);
-
-    if (error) {
-      console.error("Error fetching student feedback history:", error);
+    if (result.error) {
+      console.error("Error fetching student feedback history:", result.error);
       showError("Failed to load your feedback history.");
       setFeedbackHistory([]);
       setTotalCount(0);
     } else {
-      setFeedbackHistory(data as FeedbackHistoryEntry[] || []);
-      setTotalCount(count || 0);
+      // Filter by student ID and implement client-side pagination
+      const studentFeedback = (result.data || []).filter(f => f.student_id === userId);
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize;
+      const paginatedFeedback = studentFeedback.slice(from, to);
+      
+      setFeedbackHistory(paginatedFeedback as FeedbackHistoryEntry[]);
+      setTotalCount(studentFeedback.length);
     }
     setLoading(false);
   }, [page, pageSize]);
@@ -64,12 +51,9 @@ export const useStudentFeedbackHistory = (page: number, pageSize: number) => {
       )
     );
 
-    const { error } = await supabase
-      .from('feedback')
-      .update({ is_response_seen_by_student: true })
-      .eq('id', feedbackId);
+    const result = await apiClient.updateFeedback(feedbackId, { is_response_seen_by_student: true });
 
-    if (error) {
+    if (result.error) {
       // Revert the optimistic update if the database call fails
       setFeedbackHistory(prev =>
         prev.map(f =>

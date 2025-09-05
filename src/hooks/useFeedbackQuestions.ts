@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client'; // Disabled - not implemented in MySQL API yet
 import { showError, showSuccess } from '@/utils/toast';
 import { FeedbackQuestion } from '@/types/supabase';
 

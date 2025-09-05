@@ -1,9 +1,17 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { mysql, apiClient } from "@/lib/api-client";
 import { Profile } from "@/types/supabase"; // Import Profile type
+
+// Mock session interface for compatibility
+interface Session {
+  access_token: string;
+  user: {
+    id: string;
+    email: string;
+  };
+}
 
 interface SessionContextType {
   session: Session | null;
@@ -23,54 +31,91 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
   useEffect(() => {
     const checkSessionAndProfile = async () => {
-      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      try {
+        const token = localStorage.getItem('auth_token');
 
-      if (sessionError) {
-        console.error("Error getting session:", sessionError);
-        setSession(null);
-        setIsAdmin(false);
-        setIsProfileIncompleteRedirect(false);
-        setIsLoading(false);
-        return;
-      }
-
-      if (currentSession) {
-        setSession(currentSession);
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, is_admin, batch_id, semester_number')
-          .eq('id', currentSession.user.id)
-          .single();
-
-        if (profileError || !profile) {
-          console.error("Error fetching profile in SessionContextProvider:", profileError);
+        if (!token) {
+          setSession(null);
           setIsAdmin(false);
-          setIsProfileIncompleteRedirect(true);
-        } else {
-          setIsAdmin(profile.is_admin || false);
-          // Admins only need a name, students need name, batch, and semester
-          if (profile.is_admin) {
-            setIsProfileIncompleteRedirect(!profile.first_name || !profile.last_name);
-          } else {
-            setIsProfileIncompleteRedirect(!profile.first_name || !profile.last_name || !profile.batch_id || !profile.semester_number);
-          }
+          setIsProfileIncompleteRedirect(false);
+          setIsLoading(false);
+          return;
         }
-      } else {
+
+        // Check if backend is available
+        try {
+          const healthCheck = await fetch('http://localhost:3001/api/health', {
+            method: 'GET',
+            timeout: 5000
+          });
+          
+          if (!healthCheck.ok) {
+            throw new Error('Backend not available');
+          }
+        } catch (healthError) {
+          console.warn('Backend not available, continuing without session:', healthError);
+          setSession(null);
+          setIsAdmin(false);
+          setIsProfileIncompleteRedirect(false);
+          setIsLoading(false);
+          return;
+        }
+
+        // Get profile using MySQL API
+        const response = await fetch('http://localhost:3001/api/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const profile = await response.json();
+
+        // Create session object
+        const mockSession: Session = {
+          access_token: token,
+          user: {
+            id: profile.id,
+            email: profile.email || ''
+          }
+        };
+        
+        setSession(mockSession);
+        setIsAdmin(profile.is_admin || false);
+        
+        // Admins only need a name, students need name, batch, and semester
+        if (profile.is_admin) {
+          setIsProfileIncompleteRedirect(!profile.first_name || !profile.last_name);
+        } else {
+          setIsProfileIncompleteRedirect(!profile.first_name || !profile.last_name || !profile.batch_id || !profile.semester_number);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        localStorage.removeItem('auth_token');
         setSession(null);
         setIsAdmin(false);
         setIsProfileIncompleteRedirect(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkSessionAndProfile();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoading(true);
-      checkSessionAndProfile();
-    });
-
-    return () => subscription.unsubscribe();
+    // Listen for storage changes (login/logout from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token') {
+        setIsLoading(true);
+        checkSessionAndProfile();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (

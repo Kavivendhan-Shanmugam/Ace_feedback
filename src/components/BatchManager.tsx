@@ -19,6 +19,10 @@ const BatchManager: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Debug logging
+  console.log('BatchManager - Current batches:', batches);
+  console.log('BatchManager - Loading:', loading);
 
   const handleAddBatch = async (values: Omit<Batch, 'id' | 'created_at'>) => {
     const newBatch = await addBatch(values);

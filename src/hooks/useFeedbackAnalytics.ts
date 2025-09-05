@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError } from '@/utils/toast';
 import { SubjectFeedbackStats } from '@/types/supabase';
 import { useSession } from '@/components/SessionContextProvider';
@@ -18,19 +18,17 @@ export const useFeedbackAnalytics = (batchId?: string | null, semesterNumber?: n
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_subject_feedback_stats', {
-      p_batch_id: batchId, // Pass batchId
-      p_semester_number: semesterNumber, // Pass semesterNumber
-    });
+    const result = await apiClient.getFeedbackAnalytics(
+      batchId || undefined,
+      semesterNumber || undefined
+    );
 
-    if (error) {
-      console.error("Error fetching feedback for analytics:", error);
-      if (error?.code !== '42501') {
-        showError("Failed to load feedback analytics.");
-      }
+    if (result.error) {
+      console.error("Error fetching feedback for analytics:", result.error);
+      showError("Failed to load feedback analytics.");
       setFeedbackStats([]);
     } else {
-      setFeedbackStats(data || []);
+      setFeedbackStats(result.data || []);
     }
     setLoading(false);
   }, [isAdmin, batchId, semesterNumber]); // Add batchId and semesterNumber to dependencies
@@ -38,21 +36,8 @@ export const useFeedbackAnalytics = (batchId?: string | null, semesterNumber?: n
   useEffect(() => {
     if (!isSessionLoading) {
       fetchFeedbackStats();
-
-      const channel = supabase
-        .channel(`feedback-analytics-changes-${batchId || 'no-batch'}-${semesterNumber || 'no-semester'}`) // Unique channel name
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'feedback' },
-          () => fetchFeedbackStats()
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
-  }, [fetchFeedbackStats, isSessionLoading, batchId, semesterNumber]); // Add batchId and semesterNumber to dependencies
+  }, [fetchFeedbackStats, isSessionLoading, batchId, semesterNumber]);
 
   return {
     feedbackStats,

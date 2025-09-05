@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError } from '@/utils/toast';
 import { TimetableEntry } from '@/types/supabase';
 import { useSession } from '@/components/SessionContextProvider';
@@ -35,30 +35,22 @@ export const useWeeklyTimetable = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('timetables')
-      .select(`
-        id,
-        day_of_week,
-        class_id,
-        batch_id,
-        semester_number,
-        start_time,
-        end_time,
-        created_at,
-        subjects(id, name, period)
-      `)
-      .eq('batch_id', studentBatchId)
-      .eq('semester_number', studentSemesterNumber)
-      .order('day_of_week', { ascending: true })
-      .order('start_time', { ascending: true });
+    // Get all timetables and filter client-side for now
+    // TODO: Add batch/semester filtering to API if needed for performance
+    const result = await apiClient.getTimetables();
 
-    if (error) {
-      console.error("Error fetching timetable:", error);
+    if (result.error) {
+      console.error("Error fetching timetable:", result.error);
       showError("Failed to load weekly timetable.");
+      setTimetableEntries([]);
     } else {
-      // Explicitly filter out entries where 'subjects' is null
-      setTimetableEntries((data || []).filter(entry => entry.subjects !== null) as TimetableEntry[]);
+      // Filter by student's batch and semester
+      const filteredEntries = (result.data || []).filter(entry => 
+        entry.batch_id === studentBatchId && 
+        entry.semester_number === studentSemesterNumber &&
+        entry.subject_name // Ensure subject exists
+      );
+      setTimetableEntries(filteredEntries);
     }
     setLoading(false);
   }, [session?.user.id, profile?.batch_id, profile?.semester_number]);
@@ -75,7 +67,7 @@ export const useWeeklyTimetable = () => {
     const groups: { [key: number]: TimetableEntry[] } = {};
     daysOfWeek.forEach(day => (groups[day.value] = []));
     timetableEntries.forEach(entry => {
-      if (entry.subjects && groups[entry.day_of_week]) {
+      if ((entry.subject_name || entry.subjects) && groups[entry.day_of_week]) {
         groups[entry.day_of_week].push(entry);
       }
     });

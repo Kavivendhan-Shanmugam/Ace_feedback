@@ -12,12 +12,8 @@ import { Batch } from '@/types/supabase';
 
 const formSchema = z.object({
   name: z.string()
-    .regex(/^\d{4}$/, "Please enter a 4-digit year (e.g., 2024)")
-    .transform(yearStr => {
-      const startYear = parseInt(yearStr, 10);
-      const endYear = startYear + 4;
-      return `${startYear}-${endYear}`;
-    }),
+    .min(1, "Batch name is required")
+    .max(100, "Batch name must be less than 100 characters"),
 });
 
 type BatchFormValues = z.infer<typeof formSchema>;

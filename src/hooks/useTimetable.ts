@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError, showSuccess } from '@/utils/toast';
 import { Subject, TimetableEntry } from '@/types/supabase';
 
@@ -13,41 +13,23 @@ export const useTimetable = () => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data: subjectsData, error: subjectsError } = await supabase
-      .from('subjects')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (subjectsError) {
-      console.error("Error fetching subjects:", subjectsError);
+    
+    // Fetch subjects
+    const subjectsResult = await apiClient.getSubjects();
+    if (subjectsResult.error) {
+      console.error("Error fetching subjects:", subjectsResult.error);
       showError("Failed to load subjects for timetable.");
     } else {
-      setAvailableSubjects(subjectsData || []);
+      setAvailableSubjects(subjectsResult.data || []);
     }
 
-    const { data: timetableData, error: timetableError } = await supabase
-      .from('timetables')
-      .select(`
-        id,
-        day_of_week,
-        class_id,
-        batch_id,
-        semester_number,
-        start_time,
-        end_time,
-        created_at,
-        subjects(id, name, period),
-        batches(name)
-      `)
-      .order('day_of_week', { ascending: true })
-      .order('start_time', { ascending: true });
-
-    if (timetableError) {
-      console.error("Error fetching timetable entries:", timetableError);
+    // Fetch timetables
+    const timetableResult = await apiClient.getTimetables();
+    if (timetableResult.error) {
+      console.error("Error fetching timetable entries:", timetableResult.error);
       showError("Failed to load timetable entries.");
     } else {
-      // Explicitly filter out entries where 'subjects' is null
-      setTimetableEntries((timetableData || []).filter(entry => entry.subjects !== null) as TimetableEntry[]);
+      setTimetableEntries(timetableResult.data || []);
     }
     setLoading(false);
   }, []);
@@ -59,129 +41,65 @@ export const useTimetable = () => {
   const addTimetableEntry = async (values: { day_of_week: number; class_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
     setIsSubmitting(true);
 
-    const { data: dayEntries, error: dayEntriesError } = await supabase
-      .from('timetables')
-      .select('start_time, end_time')
-      .eq('day_of_week', values.day_of_week)
-      .eq('batch_id', values.batch_id)
-      .eq('semester_number', values.semester_number);
+    // Map values to match API expectations
+    const timetableData = {
+      dayOfWeek: values.day_of_week,
+      classId: values.class_id,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number,
+      startTime: values.start_time,
+      endTime: values.end_time
+    };
 
-    if (dayEntriesError) {
-      console.error("Error fetching day's schedule for conflict check:", dayEntriesError);
-      showError("Could not verify timetable for conflicts.");
-      setIsSubmitting(false);
-      return null;
-    }
+    const result = await apiClient.createTimetable(timetableData);
 
-    const hasConflict = dayEntries.some(existingEntry => {
-      return values.start_time < existingEntry.end_time && values.end_time > existingEntry.start_time;
-    });
-
-    if (hasConflict) {
-      showError(`Time conflict detected. A subject is already scheduled during this time for this batch and semester.`);
-      setIsSubmitting(false);
-      return null;
-    }
-
-    const { data, error } = await supabase
-      .from('timetables')
-      .insert(values)
-      .select(`
-        id,
-        day_of_week,
-        class_id,
-        batch_id,
-        semester_number,
-        start_time,
-        end_time,
-        created_at,
-        subjects(id, name, period),
-        batches(name)
-      `)
-      .single();
-
-    if (error) {
-      console.error("Error adding timetable entry:", error);
-      showError("Failed to add timetable entry.");
+    if (result.error) {
+      console.error("Error adding timetable entry:", result.error);
+      showError(`Failed to add timetable entry: ${result.error}`);
       setIsSubmitting(false);
       return null;
     } else {
       showSuccess("Timetable entry added successfully!");
-      setTimetableEntries(prevEntries => [...prevEntries, data as TimetableEntry]);
-      fetchData(); // Refetch to ensure sorted order
+      await fetchData(); // Refetch to get the latest data
       setIsSubmitting(false);
-      return data;
+      return result.data;
     }
   };
 
   const updateTimetableEntry = async (id: string, values: { day_of_week: number; class_id: string; batch_id: string; semester_number: number; start_time: string; end_time: string }) => {
     setIsSubmitting(true);
 
-    const { data: dayEntries, error: dayEntriesError } = await supabase
-      .from('timetables')
-      .select('start_time, end_time')
-      .eq('day_of_week', values.day_of_week)
-      .eq('batch_id', values.batch_id)
-      .eq('semester_number', values.semester_number)
-      .not('id', 'eq', id);
+    // Map values to match API expectations
+    const timetableData = {
+      dayOfWeek: values.day_of_week,
+      classId: values.class_id,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number,
+      startTime: values.start_time,
+      endTime: values.end_time
+    };
 
-    if (dayEntriesError) {
-      console.error("Error fetching day's schedule for conflict check:", dayEntriesError);
-      showError("Could not verify timetable for conflicts.");
-      setIsSubmitting(false);
-      return null;
-    }
+    const result = await apiClient.updateTimetable(id, timetableData);
 
-    const hasConflict = dayEntries.some(existingEntry => {
-      return values.start_time < existingEntry.end_time && values.end_time > existingEntry.start_time;
-    });
-
-    if (hasConflict) {
-      showError(`Time conflict detected. A subject is already scheduled during this time for this batch and semester.`);
-      setIsSubmitting(false);
-      return null;
-    }
-
-    const { data, error } = await supabase
-      .from('timetables')
-      .update(values)
-      .eq('id', id)
-      .select(`
-        id,
-        day_of_week,
-        class_id,
-        batch_id,
-        semester_number,
-        start_time,
-        end_time,
-        created_at,
-        subjects(id, name, period),
-        batches(name)
-      `)
-      .single();
-
-    if (error) {
-      console.error("Error updating timetable entry:", error);
-      showError("Failed to update timetable entry.");
+    if (result.error) {
+      console.error("Error updating timetable entry:", result.error);
+      showError(`Failed to update timetable entry: ${result.error}`);
       setIsSubmitting(false);
       return null;
     } else {
       showSuccess("Timetable entry updated successfully!");
-      fetchData(); // Refetch to ensure sorted order
+      await fetchData(); // Refetch to get the latest data
       setIsSubmitting(false);
-      return data;
+      return result.data;
     }
   };
 
   const deleteTimetableEntry = async (id: string) => {
-    const { error } = await supabase
-      .from('timetables')
-      .delete()
-      .eq('id', id);
+    const result = await apiClient.deleteTimetable(id);
 
-    if (error) {
-      console.error("Error deleting timetable entry:", error);
-      showError("Failed to delete timetable entry.");
+    if (result.error) {
+      console.error("Error deleting timetable entry:", result.error);
+      showError(`Failed to delete timetable entry: ${result.error}`);
       return false;
     } else {
       showSuccess("Timetable entry deleted successfully!");

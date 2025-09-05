@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError, showSuccess } from '@/utils/toast';
 import { Subject } from '@/types/supabase'; // Import Subject
 
@@ -12,16 +12,13 @@ export const useSubjects = () => {
 
   const fetchSubjects = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('subjects')
-      .select(`*, batches(name)`) // Join with batches to get batch name
-      .order('name', { ascending: true });
+    const result = await apiClient.getSubjects();
 
-    if (error) {
-      console.error("Error fetching subjects:", error);
+    if (result.error) {
+      console.error("Error fetching subjects:", result.error);
       showError("Failed to load subjects.");
     } else {
-      setSubjects(data || []);
+      setSubjects(result.data || []);
     }
     setLoading(false);
   }, []);
@@ -32,57 +29,64 @@ export const useSubjects = () => {
 
   const addSubject = async (values: Omit<Subject, 'id' | 'created_at' | 'batches'>) => {
     setIsSubmitting(true);
-    const { data, error } = await supabase
-      .from('subjects')
-      .insert(values)
-      .select(`*, batches(name)`)
-      .single();
+    console.log('Adding subject with values:', values);
+    
+    // Map the form data to match API expectations
+    const subjectData = {
+      name: values.name,
+      period: values.period || null,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number
+    };
+    
+    const result = await apiClient.createSubject(subjectData);
 
-    if (error) {
-      console.error("Error adding subject:", error);
-      showError("Failed to add subject.");
+    if (result.error) {
+      console.error("Error adding subject:", result.error);
+      showError(`Failed to add subject: ${result.error}`);
       setIsSubmitting(false);
       return null;
     } else {
       showSuccess("Subject added successfully!");
-      setSubjects(prevSubjects => [...prevSubjects, data].sort((a, b) => a.name.localeCompare(b.name)));
+      // Refresh the entire list instead of just adding to the current list
+      await fetchSubjects();
       setIsSubmitting(false);
-      return data;
+      return result.data;
     }
   };
 
   const updateSubject = async (id: string, values: Omit<Subject, 'id' | 'created_at' | 'batches'>) => {
     setIsSubmitting(true);
     
-    const { data, error } = await supabase
-      .from('subjects')
-      .update(values)
-      .eq('id', id)
-      .select(`*, batches(name)`)
-      .single();
+    // Map the form data to match API expectations
+    const subjectData = {
+      name: values.name,
+      period: values.period || null,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number
+    };
+    
+    const result = await apiClient.updateSubject(id, subjectData);
 
-    if (error) {
-      console.error("Error updating subject:", error);
-      showError("Failed to update subject.");
+    if (result.error) {
+      console.error("Error updating subject:", result.error);
+      showError(`Failed to update subject: ${result.error}`);
       setIsSubmitting(false);
       return null;
     } else {
       showSuccess("Subject updated successfully!");
-      setSubjects(prevSubjects => prevSubjects.map(sub => sub.id === data.id ? data : sub).sort((a, b) => a.name.localeCompare(b.name)));
+      setSubjects(prevSubjects => prevSubjects.map(sub => sub.id === result.data.id ? result.data : sub).sort((a, b) => a.name.localeCompare(b.name)));
       setIsSubmitting(false);
-      return data;
+      return result.data;
     }
   };
 
   const deleteSubject = async (id: string) => {
-    const { error } = await supabase
-      .rpc('delete_subject_and_dependents', { // Renamed RPC call
-        subject_id_to_delete: id
-      });
+    const result = await apiClient.deleteSubject(id);
 
-    if (error) {
-      console.error("Error deleting subject:", error);
-      showError(`Failed to delete subject: ${error.message}`);
+    if (result.error) {
+      console.error("Error deleting subject:", result.error);
+      showError(`Failed to delete subject: ${result.error}`);
       return false;
     } else {
       showSuccess("Subject deleted successfully!");

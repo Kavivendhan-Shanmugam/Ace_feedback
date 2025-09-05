@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError, showSuccess } from '@/utils/toast';
 import { Profile } from '@/types/supabase';
 
@@ -12,14 +12,13 @@ export const useStudentManager = () => {
 
   const fetchStudents = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_all_user_profiles');
+    const result = await apiClient.getStudents();
 
-    if (error) {
-      console.error("Error fetching students:", error);
+    if (result.error) {
+      console.error("Error fetching students:", result.error);
       showError("Failed to load students.");
     } else {
-      const studentProfiles = (data || []).filter(profile => !profile.is_admin);
-      setStudents(studentProfiles);
+      setStudents(result.data || []);
     }
     setLoading(false);
   }, []);
@@ -30,77 +29,69 @@ export const useStudentManager = () => {
 
   const addStudent = async (values: any) => {
     setIsSubmitting(true);
-    const { data: invokeData, error: invokeError } = await supabase.functions.invoke('create-user', {
-        body: values,
-    });
+    console.log('Adding student with values:', values);
+    
+    // Map form values to API expected format
+    const studentData = {
+      email: values.email,
+      password: values.password || 'defaultPassword123', // You might want to generate this
+      firstName: values.first_name,
+      lastName: values.last_name,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number
+    };
+    
+    const result = await apiClient.createStudent(studentData);
 
-    if (invokeError) {
-        console.error("Error creating student:", invokeError);
-        showError(`Failed to create student: ${invokeError.message}`);
-        setIsSubmitting(false);
-        return null;
+    if (result.error) {
+      console.error("Error creating student:", result.error);
+      showError(`Failed to create student: ${result.error}`);
+      setIsSubmitting(false);
+      return null;
+    } else {
+      showSuccess("Student created successfully!");
+      await fetchStudents();
+      setIsSubmitting(false);
+      return result.data;
     }
-
-    const newUser = invokeData.user;
-
-    const { error: profileUpdateError } = await supabase
-      .from('profiles')
-      .update({
-        batch_id: values.batch_id,
-        semester_number: values.semester_number,
-      })
-      .eq('id', newUser.id);
-
-    if (profileUpdateError) {
-      console.error("Error updating student profile:", profileUpdateError);
-      showError(`Student created, but failed to set batch/semester: ${profileUpdateError.message}`);
-    }
-
-    showSuccess("Student created successfully!");
-    fetchStudents();
-    setIsSubmitting(false);
-    return newUser;
   };
 
   const updateStudent = async (id: string, values: any) => {
     setIsSubmitting(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
-        first_name: values.first_name,
-        last_name: values.last_name,
-        batch_id: values.batch_id,
-        semester_number: values.semester_number,
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    
+    // Map form values to API expected format
+    const updateData = {
+      firstName: values.first_name,
+      lastName: values.last_name,
+      batchId: values.batch_id,
+      semesterNumber: values.semester_number
+    };
+    
+    const result = await apiClient.updateStudent(id, updateData);
 
-    if (error) {
-      console.error("Error updating student:", error);
-      showError(`Failed to update student: ${error.message}`);
+    if (result.error) {
+      console.error("Error updating student:", result.error);
+      showError(`Failed to update student: ${result.error}`);
       setIsSubmitting(false);
       return null;
     } else {
       showSuccess("Student updated successfully!");
-      fetchStudents();
+      await fetchStudents();
       setIsSubmitting(false);
-      return data;
+      return result.data;
     }
   };
 
   const deleteStudent = async (id: string) => {
-    const { error } = await supabase.functions.invoke('delete-user', {
-      body: { user_id: id },
-    });
+    const result = await apiClient.deleteStudent(id);
 
-    if (error) {
-      console.error("Error deleting student:", error);
-      showError(`Failed to delete student: ${error.message}`);
+    if (result.error) {
+      console.error("Error deleting student:", result.error);
+      showError(`Failed to delete student: ${result.error}`);
       return false;
     } else {
       showSuccess("Student deleted successfully!");
-      fetchStudents();
+      await fetchStudents();
       return true;
     }
   };

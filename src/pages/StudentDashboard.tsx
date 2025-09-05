@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeedbackForm from '@/components/FeedbackForm';
 import { CheckCircle, Info } from 'lucide-react';
@@ -69,22 +69,28 @@ const StudentDashboard = () => {
       answer: additionalAnswers[q.id]
     }));
 
-    const { error } = await supabase.from('feedback').insert({
-      student_id: session.user.id,
-      class_id: activeFeedbackSubject.id,
-      batch_id: profile.batch_id,
-      semester_number: profile.semester_number,
-      rating: rating,
-      comment: comment,
-      additional_feedback: additional_feedback_payload,
-    });
+    // TODO: Implement MySQL feedback submission API
+    try {
+      const { error } = await apiClient.createFeedback({
+        student_id: session.user.id,
+        class_id: activeFeedbackSubject.id,
+        batch_id: profile.batch_id,
+        semester_number: profile.semester_number,
+        rating: rating,
+        comment: comment,
+        additional_feedback: additional_feedback_payload,
+      });
 
-    if (error) {
-      console.error("Error submitting feedback:", error);
-      showError("Failed to submit feedback. You might have already submitted feedback for this subject.");
-    } else {
-      showSuccess("Feedback submitted successfully!");
-      fetchDailySubjects();
+      if (error) {
+        console.error("Error submitting feedback:", error);
+        showError("Failed to submit feedback. You might have already submitted feedback for this subject.");
+      } else {
+        showSuccess("Feedback submitted successfully!");
+        fetchDailySubjects();
+      }
+    } catch (err) {
+      console.error("Error submitting feedback:", err);
+      showError("Feedback submission not yet implemented for MySQL.");
     }
     setIsSubmittingFeedback(false);
   };

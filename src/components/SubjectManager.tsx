@@ -192,7 +192,7 @@ const SubjectManager: React.FC = () => {
                   {filteredSubjects.map((sub: Subject) => (
                     <TableRow key={sub.id}>
                       <TableCell>{sub.name} {sub.period ? `(P${sub.period})` : ''}</TableCell>
-                      <TableCell>{sub.batches?.name || 'N/A'}</TableCell>
+                      <TableCell>{sub.batch_name || 'N/A'}</TableCell>
                       <TableCell>{sub.semester_number || 'N/A'}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end items-center space-x-2">

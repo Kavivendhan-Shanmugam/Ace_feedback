@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/components/SessionContextProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { LogOut, User, LayoutDashboard } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import {
@@ -28,7 +28,8 @@ const Header: React.FC = () => {
   const { profile, loading: profileLoading } = useProfile();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    apiClient.logout();
+    window.location.href = '/login';
   };
 
   if (isLoading || !session || profileLoading) {

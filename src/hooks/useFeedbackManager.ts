@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { showError, showSuccess } from '@/utils/toast';
 import { Feedback } from '@/types/supabase';
 
@@ -12,91 +12,49 @@ export const useFeedbackManager = () => {
 
   const fetchFeedback = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('feedback')
-      .select(`
-        id,
-        rating,
-        comment,
-        admin_response,
-        created_at,
-        is_response_seen_by_student,
-        class_id,
-        batch_id,
-        semester_number,
-        student_id,
-        subjects(name, period),
-        profiles(first_name, last_name),
-        batches(name)
-      `)
-      .order('created_at', { ascending: false });
+    const result = await apiClient.getFeedback();
 
-    if (error) {
-      console.error("Error fetching feedback:", error);
+    if (result.error) {
+      console.error("Error fetching feedback:", result.error);
       showError("Failed to load feedback entries.");
     } else {
-      setFeedbackEntries(data as Feedback[] || []);
+      setFeedbackEntries(result.data || []);
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchFeedback();
-
-    const channel = supabase
-      .channel('feedback-manager-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'feedback' },
-        () => fetchFeedback()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Note: Real-time subscriptions are not implemented in MySQL API
+    // Consider adding polling or manual refresh if needed
   }, [fetchFeedback]);
 
   const updateAdminResponse = async (feedbackId: string, response: string | null) => {
     setIsSubmittingResponse(true);
-    const { data, error } = await supabase
-      .from('feedback')
-      .update({ 
-        admin_response: response,
-        is_response_seen_by_student: false // Reset flag to notify student
-      })
-      .eq('id', feedbackId)
-      .select()
-      .single();
+    const result = await apiClient.updateFeedback(feedbackId, {
+      adminResponse: response,
+      isResponseSeenByStudent: false // Reset flag to notify student
+    });
 
-    if (error) {
-      console.error("Error updating feedback response:", error);
-      showError("Failed to update feedback response.");
+    if (result.error) {
+      console.error("Error updating feedback response:", result.error);
+      showError(`Failed to update feedback response: ${result.error}`);
       setIsSubmittingResponse(false);
       return null;
     } else {
       showSuccess("Feedback response updated successfully!");
-      // No need to manually refetch, real-time subscription will handle it.
+      await fetchFeedback(); // Manually refresh since no real-time subscriptions
       setIsSubmittingResponse(false);
-      return data;
+      return result.data;
     }
   };
 
   const deleteFeedback = async (feedbackId: string) => {
-    const { error } = await supabase
-      .from('feedback')
-      .delete()
-      .eq('id', feedbackId);
-
-    if (error) {
-      console.error("Error deleting feedback:", error);
-      showError("Failed to delete feedback entry.");
-      return false;
-    } else {
-      showSuccess("Feedback entry deleted successfully!");
-      // No need to manually refetch, real-time subscription will handle it.
-      return true;
-    }
+    // Note: Delete functionality not implemented in current API client
+    // This would need to be added to the API client and server if needed
+    console.warn("Delete feedback not implemented in MySQL API");
+    showError("Delete feedback functionality is not currently available.");
+    return false;
   };
 
   return {
